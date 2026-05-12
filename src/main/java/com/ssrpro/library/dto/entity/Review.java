@@ -1,7 +1,8 @@
 package com.ssrpro.library.dto.entity;
 
+import jakarta.validation.Valid;
 import lombok.*;
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
@@ -9,10 +10,11 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @ToString
-@NoArgsConstructor
-@AllArgsConstructor
 @Builder
-public class ReviewEntity {
+@AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED) // 1. 접근 제한자 변경
+@Valid
+public class Review {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,7 +33,7 @@ public class ReviewEntity {
 	@Column(name = "REVIEW_RATING", precision = 2, scale = 1)
 	private Double reviewRating;
 
-	@Column(name = "REVIEW_CREATED_AT", nullable = false)
+	@Column(name = "REVIEW_CREATED_AT", nullable = false, updatable = false) // 2. 업데이트 방지 설정
 	private LocalDateTime reviewCreatedAt;
 
 	@Column(name = "REVIEW_UPDATED_AT")
