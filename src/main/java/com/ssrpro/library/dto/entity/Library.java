@@ -5,8 +5,6 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Getter
-@ToString
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
