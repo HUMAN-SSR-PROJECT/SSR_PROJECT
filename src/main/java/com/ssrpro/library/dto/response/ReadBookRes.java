@@ -18,7 +18,6 @@ import lombok.ToString;
 @Builder
 @Valid
 public class ReadBookRes {
-  private Long memberId;
   private Long bookId;
   private String bookImg;
   private String bookGenre;
@@ -29,9 +28,8 @@ public class ReadBookRes {
   private LocalDateTime readBookStart;
   private LocalDateTime readBookEnd;
 
-  public static ReadBookRes of(ReadBook readBook, Member member, Book book) {
+  public static ReadBookRes of(ReadBook readBook, Book book) {
     return ReadBookRes.builder()
-            .memberId(member.getMemberId())
             .bookId(book.getBookId())
             .bookImg(book.getBookImg())
             .bookGenre(book.getGenre())
