@@ -17,9 +17,9 @@ public class MemberDao {
     private final JdbcTemplate jdbcTemplate;
     // 회원가입
     public int join(Members members) {
-        String sql = "INSERT INTO MEMBERS (MEMBER_EMAIL, MEMBER_PASSWORD, MEMBER_NAME, " +
+        String sql = "INSERT INTO MEMBERS (MEMBER_ID, MEMBER_EMAIL, MEMBER_PASSWORD, MEMBER_NAME, " +
                       "MEMBER_NICKNAME, MEMBER_BIRTH, MEMBER_STATE, MEMBER_RULE) " +
-                      "VALUES (?, ?, ?, ?, ?, ?, ?)";
+                      "VALUES (MEMBER_SEQ.NEXTVAL, ?, ?, ?, ?, ?, ?, ?)";
         return jdbcTemplate.update(sql,
                 members.getEmail().trim(), members.getPassword(), members.getName().trim(),
                 members.getNickname().trim(), members.getBirth(),
