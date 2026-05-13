@@ -48,7 +48,7 @@ public class MemberDao {
         return count != null && count > 0;
     }
 
-    // DB
+    // DB 조회 결과를 Members 객체로 매핑하는 도우미 메서드
     private RowMapper<Members> memberRowMapper() {
         return (rs, rowNum) -> Members.builder()
                 .id(rs.getLong("MEMBER_ID"))
