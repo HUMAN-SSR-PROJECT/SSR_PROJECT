@@ -2,6 +2,7 @@ package com.ssrpro.library.dao;
 
 import com.ssrpro.library.dto.entity.Library;
 import com.ssrpro.library.dto.response.LibraryRes;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -26,6 +27,7 @@ public class LibraryDao {
     }
 
     // 도서관 정보 입력
+    @Transactional
     public boolean insertLibrary(Library library){
         String sql = "INSERT INTO LIBRARY " +
                         "(LIBRARY_ID, LIBRARY_CODE, LIBRARY_NAME, LIBRARY_ADDR, LIBRARY_LAT, LIBRARY_LON) " +
