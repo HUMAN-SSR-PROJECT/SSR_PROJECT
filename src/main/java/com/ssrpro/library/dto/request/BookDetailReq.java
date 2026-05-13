@@ -1,17 +1,16 @@
 package com.ssrpro.library.dto.request;
 
-
 import lombok.*;
 
-@Getter
+import java.util.List;
+
 @Setter
+@Getter
 @ToString
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 @Builder
 public class BookDetailReq {
-    private String bookId;
-    private String city; // 시.도
-    private String district; //구.군
-
+    private Long bookId;
+    private List<String> libraryCodes;
 }
