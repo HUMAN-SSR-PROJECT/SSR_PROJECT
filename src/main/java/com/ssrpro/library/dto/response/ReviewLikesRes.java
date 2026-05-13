@@ -13,8 +13,6 @@ import java.time.LocalDateTime;
 @Valid
 public class ReviewLikesRes {
 
-  private Long memberId;
-  private Long reviewId;
   private LocalDateTime reviewLikesCreatedAt;
   private LocalDateTime reviewLikesUpdatedAt;
 
