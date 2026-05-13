@@ -6,13 +6,12 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Getter
-@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@ToString
 public class Members {
     private Long id;
+    private String password;
     private String nickname;
     private String email;
     private String name;
@@ -23,4 +22,5 @@ public class Members {
     private String intro;
     private String state;
     private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }
