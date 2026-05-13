@@ -19,4 +19,7 @@ public class Review {
 
   private LocalDateTime reviewCreatedAt;
   private LocalDateTime reviewUpdatedAt;
+
+  private String memberNickname; // [2026-05-13-14:32 추가] MEMBER JOIN
+  private String memberImgUrl; // [2026-05-13-14:32 추가] MEMBER JOIN
 }
