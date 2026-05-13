@@ -6,6 +6,8 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -14,14 +16,17 @@ import java.util.List;
 @RequiredArgsConstructor
 public class LibraryDao {
     private final JdbcTemplate jdbcTemplate;
+    private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
     // 도서관 코드로 도서관 정보 반환
-    public List<Library> findByLibraryCode(Long libraryCode){
+    public List<Library> findByLibraryCode(List<String> libraryCodes){
         String sql = "SELECT * " +
                         "FROM LIBRARY l " +
-                        "WHERE l.LIBRARY_CODE = ? ";
+                        "WHERE l.LIBRARY_CODE IN (:codes) ";
 
-        List<Library> libraryList = jdbcTemplate.query(sql, new BeanPropertyRowMapper<>(Library.class), libraryCode);
+        MapSqlParameterSource params = new MapSqlParameterSource("codes", libraryCodes);
+
+        List<Library> libraryList = namedParameterJdbcTemplate.query(sql, params, new BeanPropertyRowMapper<>(Library.class));
 
         return libraryList;
     }
