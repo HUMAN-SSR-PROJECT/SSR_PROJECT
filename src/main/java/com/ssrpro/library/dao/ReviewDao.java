@@ -16,7 +16,7 @@ public class ReviewDao {
   private final JdbcTemplate jdbcTemplate;
 
   // ──────────────────────────────────────────
-  // Review RowMapper (MEMBER JOIN 포함)
+  // Review RowMapper (MEMBERS JOIN 포함)
   // ──────────────────────────────────────────
   private final RowMapper<Review> reviewRowMapper = (rs, rowNum) -> Review.builder()
       .reviewId(rs.getLong("REVIEW_ID"))
@@ -40,11 +40,11 @@ public class ReviewDao {
   // Review CRUD
   // ──────────────────────────────────────────
 
-  // 리뷰 작성 (REVIEW_ID DB 자동 생성)
+  // 리뷰 작성 (REVIEW_SEQ로 REVIEW_ID 자동 생성)
   public int insert(Review review) {
     String sql = "INSERT INTO REVIEW " +
-        "(BOOK_ID, MEMBER_ID, REVIEW_COMMENT, REVIEW_RATING) " +
-        "VALUES (?, ?, ?, ?)";
+        "(REVIEW_ID, BOOK_ID, MEMBER_ID, REVIEW_COMMENT, REVIEW_RATING) " +
+        "VALUES (REVIEW_SEQ.nextval, ?, ?, ?, ?)";
     return jdbcTemplate.update(sql,
         review.getBookId(),
         review.getMemberId(),
@@ -71,45 +71,45 @@ public class ReviewDao {
     return jdbcTemplate.update(sql, reviewId, memberId);
   }
 
-  // 관리자 리뷰 삭제 (조건 없음)
+  // 관리자 리뷰 삭제 (조건 없음 - Controller에서 관리자 여부 확인)
   public int adminDelete(Long reviewId) {
     String sql = "DELETE FROM REVIEW WHERE REVIEW_ID = ?";
     return jdbcTemplate.update(sql, reviewId);
   }
 
-  // 도서별 리뷰 목록 조회 (MEMBER JOIN - 닉네임, 이미지 포함)
+  // 도서별 리뷰 목록 조회 (MEMBERS JOIN - 닉네임, 이미지 포함)
   public List<Review> findByBookId(Long bookId) {
     String sql = "SELECT R.REVIEW_ID, R.BOOK_ID, R.MEMBER_ID, " +
         "R.REVIEW_COMMENT, R.REVIEW_RATING, " +
         "R.REVIEW_CREATED_AT, R.REVIEW_UPDATED_AT, " +
         "M.MEMBER_NICKNAME, M.MEMBER_IMGURL " +
         "FROM REVIEW R " +
-        "JOIN MEMBER M ON R.MEMBER_ID = M.MEMBER_ID " +
+        "JOIN MEMBERS M ON R.MEMBER_ID = M.MEMBER_ID " +
         "WHERE R.BOOK_ID = ? " +
         "ORDER BY R.REVIEW_CREATED_AT DESC";
     return jdbcTemplate.query(sql, reviewRowMapper, bookId);
   }
 
-  // 리뷰 단건 조회 (MEMBER JOIN - 닉네임, 이미지 포함)
+  // 리뷰 단건 조회 (MEMBERS JOIN - 닉네임, 이미지 포함)
   public Review findById(Long reviewId) {
     String sql = "SELECT R.REVIEW_ID, R.BOOK_ID, R.MEMBER_ID, " +
         "R.REVIEW_COMMENT, R.REVIEW_RATING, " +
         "R.REVIEW_CREATED_AT, R.REVIEW_UPDATED_AT, " +
         "M.MEMBER_NICKNAME, M.MEMBER_IMGURL " +
         "FROM REVIEW R " +
-        "JOIN MEMBER M ON R.MEMBER_ID = M.MEMBER_ID " +
+        "JOIN MEMBERS M ON R.MEMBER_ID = M.MEMBER_ID " +
         "WHERE R.REVIEW_ID = ?";
     return jdbcTemplate.queryForObject(sql, reviewRowMapper, reviewId);
   }
 
-  // 회원별 리뷰 목록 조회 (MEMBER JOIN - 닉네임, 이미지 포함)
+  // 회원별 리뷰 목록 조회 (MEMBERS JOIN - 닉네임, 이미지 포함)
   public List<Review> findByMemberId(Long memberId) {
     String sql = "SELECT R.REVIEW_ID, R.BOOK_ID, R.MEMBER_ID, " +
         "R.REVIEW_COMMENT, R.REVIEW_RATING, " +
         "R.REVIEW_CREATED_AT, R.REVIEW_UPDATED_AT, " +
         "M.MEMBER_NICKNAME, M.MEMBER_IMGURL " +
         "FROM REVIEW R " +
-        "JOIN MEMBER M ON R.MEMBER_ID = M.MEMBER_ID " +
+        "JOIN MEMBERS M ON R.MEMBER_ID = M.MEMBER_ID " +
         "WHERE R.MEMBER_ID = ? " +
         "ORDER BY R.REVIEW_CREATED_AT DESC";
     return jdbcTemplate.query(sql, reviewRowMapper, memberId);
@@ -132,7 +132,7 @@ public class ReviewDao {
   // ReviewLikes CRUD
   // ──────────────────────────────────────────
 
-  // 좋아요 추가
+  // 좋아요 추가 (복합 PK - 중복 좋아요 DB에서 방지)
   public int insertLike(ReviewLikes reviewLikes) {
     String sql = "INSERT INTO REVIEW_LIKES (REVIEW_ID, MEMBER_ID) VALUES (?, ?)";
     return jdbcTemplate.update(sql,
