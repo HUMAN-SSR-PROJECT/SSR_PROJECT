@@ -27,7 +27,6 @@ public class LibraryDao {
     }
 
     // 도서관 정보 입력
-    @Transactional
     public boolean insertLibrary(Library library){
         String sql = "INSERT INTO LIBRARY " +
                         "(LIBRARY_ID, LIBRARY_CODE, LIBRARY_NAME, LIBRARY_ADDR, LIBRARY_LAT, LIBRARY_LON) " +
