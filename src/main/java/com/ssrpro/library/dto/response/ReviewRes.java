@@ -22,4 +22,7 @@ public class ReviewRes {
   private Long likeCount;
   private Boolean isLiked;
   private Long commentCount;
+
+  private String memberNickname; // [2026-05-13-14:32 추가] 엔티티에서 변환
+  private String memberImgUrl; // [2026-05-13-14:32 추가] 엔티티에서 변환
 }
