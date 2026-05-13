@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Valid
 public class ReviewLikesRes {
-
+  
   private LocalDateTime reviewLikesCreatedAt;
   private LocalDateTime reviewLikesUpdatedAt;
 
