@@ -1,6 +1,7 @@
 package com.ssrpro.library.dto.response;
 
 import com.ssrpro.library.dto.entity.ReadBook;
+import com.ssrpro.library.dto.entity.Book;
 import java.time.LocalDateTime;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -32,9 +33,9 @@ public class ReadBookRes {
     return ReadBookRes.builder()
             .bookId(book.getBookId())
             .bookImg(book.getBookImg())
-            .bookGenre(book.getGenre())
-            .bookTitle(book.getTitle())
-            .bookWriter(book.getWriter())
+            .bookGenre(book.getBookGenre())
+            .bookTitle(book.getBookTitle())
+            .bookWriter(book.getBookWriter())
             .readBookState(readBook.getReadBookState())
             .readBookRating(readBook.getReadBookRating())
             .readBookStart(readBook.getReadBookStart())
