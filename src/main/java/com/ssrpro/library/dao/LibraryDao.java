@@ -15,13 +15,13 @@ import java.util.List;
 public class LibraryDao {
     private final JdbcTemplate jdbcTemplate;
 
-    // 도서관 주소로 도서관 정보 반환
-    public List<Library> findByAddr(String addr){
+    // 도서관 코드로 도서관 정보 반환
+    public List<Library> findByLibraryCode(Long libraryCode){
         String sql = "SELECT * " +
                         "FROM LIBRARY l " +
-                        "WHERE l.ADDR LIKE ? ";
+                        "WHERE l.LIBRARY_CODE = ? ";
 
-        List<Library> libraryList = jdbcTemplate.query(sql, new BeanPropertyRowMapper<>(Library.class), "%" + addr.trim() + "%");
+        List<Library> libraryList = jdbcTemplate.query(sql, new BeanPropertyRowMapper<>(Library.class), libraryCode);
 
         return libraryList;
     }

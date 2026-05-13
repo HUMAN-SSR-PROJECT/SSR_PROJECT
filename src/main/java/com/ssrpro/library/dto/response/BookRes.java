@@ -7,6 +7,7 @@ import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @ToString
@@ -30,7 +31,7 @@ public class BookRes {
     private LocalDateTime bookCreatedAt;
     private LocalDateTime bookUpdatedAt;
 
-    public static BookRes of(Book book) {
+    public static BookRes of(Book book, List<String> libraryCodes) {
         return BookRes.builder()
                 .bookId(book.getBookId())
                 .bookImg(book.getBookImg())

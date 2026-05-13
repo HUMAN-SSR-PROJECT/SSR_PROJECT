@@ -9,7 +9,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class BookDetailReq {
+public class BookSearchReq {
     private String keyword;
     private String city; // 시.도
     private String district; //구.군
