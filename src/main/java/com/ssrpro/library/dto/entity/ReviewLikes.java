@@ -5,8 +5,6 @@ import jakarta.validation.Valid;
 import java.time.LocalDateTime;
 
 @Getter
-@Setter
-@ToString
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor

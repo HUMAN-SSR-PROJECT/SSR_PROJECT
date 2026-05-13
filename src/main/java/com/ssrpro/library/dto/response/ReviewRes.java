@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 @Valid
 public class ReviewRes {
 
+  public Long reviewId;
   private String reviewComment;
   private Double reviewRating;
   private LocalDateTime reviewCreatedAt;

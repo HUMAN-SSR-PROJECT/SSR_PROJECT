@@ -5,8 +5,6 @@ import jakarta.validation.Valid;
 import java.time.LocalDateTime;
 
 @Getter
-@Setter
-@ToString
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -14,13 +12,9 @@ import java.time.LocalDateTime;
 public class Review {
 
   private Long reviewId;
-
   private Long bookId;
-
   private Long memberId;
-
   private String reviewComment;
-
   private Double reviewRating;
 
   private LocalDateTime reviewCreatedAt;
