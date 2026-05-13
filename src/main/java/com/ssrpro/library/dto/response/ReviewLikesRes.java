@@ -1,21 +1,19 @@
 package com.ssrpro.library.dto.response;
 
-import jakarta.validation.Valid;
 import lombok.*;
+import jakarta.validation.Valid;
 import java.time.LocalDateTime;
 
 @Getter
 @Setter
-@Builder
 @ToString
-@NoArgsConstructor
+@Builder
 @AllArgsConstructor
+@NoArgsConstructor
 @Valid
 public class ReviewLikesRes {
-
-	private Long memberId;
-	private Long reviewId;
-	private LocalDateTime reviewLikesCreatedAt;
-	private LocalDateTime reviewLikesUpdatedAt;
+  
+  private LocalDateTime reviewLikesCreatedAt;
+  private LocalDateTime reviewLikesUpdatedAt;
 
 }
