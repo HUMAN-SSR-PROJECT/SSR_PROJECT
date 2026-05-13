@@ -10,7 +10,7 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class BookDetailReq {
-    private String bookId;
+    private String keyword;
     private String city; // 시.도
     private String district; //구.군
 
