@@ -1,7 +1,5 @@
 package com.ssrpro.library.dto.response;
 
-import java.time.LocalDateTime;
-
 import com.ssrpro.library.dto.entity.Book;
 import com.ssrpro.library.dto.entity.ReadSoon;
 

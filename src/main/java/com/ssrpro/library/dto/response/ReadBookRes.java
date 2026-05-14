@@ -26,6 +26,7 @@ public class ReadBookRes {
   private String bookWriter;
   private String readBookState;
   private Double readBookRating;
+  private String readBookMemo;
   private LocalDateTime readBookStart;
   private LocalDateTime readBookEnd;
 
@@ -38,6 +39,7 @@ public class ReadBookRes {
             .bookWriter(book.getBookWriter())
             .readBookState(readBook.getReadBookState())
             .readBookRating(readBook.getReadBookRating())
+            .readBookMemo(readBook.getReadBookMemo())
             .readBookStart(readBook.getReadBookStart())
             .readBookEnd(readBook.getReadBookEnd())
             .build();

@@ -51,7 +51,7 @@ public class ReadBookDao {
   // 내 서재 - 읽을 책 삭제
   public boolean deleteReadSoon(Long memberId, Long bookId) {
     String sql = """
-        DELETE FROM read_soon
+        DELETE FROM read_soon 
         WHERE member_id = ? AND book_id = ?
         """;
     int rst = jdbcTemplate.update(sql, memberId, bookId);
@@ -61,7 +61,7 @@ public class ReadBookDao {
   // 내 서재 - 읽을 책 → 읽는 중
   public boolean addToReading(Long memberId, Long bookId) {
     String sql = """
-        INSERT INTO read_book (member_id, book_id)
+        INSERT INTO read_book (member_id, book_id) 
         VALUES (?, ?)
         """;
     int rst = jdbcTemplate.update(sql, memberId, bookId);
@@ -94,21 +94,21 @@ public class ReadBookDao {
   // 내 서재 - 읽는 중 / 완독 삭제
   public boolean deleteReading(Long memberId, Long bookId) {
     String sql = """
-        DELETE FROM read_book
+        DELETE FROM read_book 
         WHERE member_id = ? AND book_id = ?
         """;
     int rst = jdbcTemplate.update(sql, memberId, bookId);
     return rst > 0;
   }
 
-  // 내 서재 - 읽는 중 → 완독
-  public boolean changeToReaded(ReadBookReq readBookReq) {
+  // 내 서재 - 읽는 중 → 완독, 완독 상세 수정
+  public boolean changeToReaded(ReadBookReq readBookReq, Long memberId) {
     String sql = """
         UPDATE read_book 
         SET read_book_rating = ?, read_book_end = ?, read_book_memo = ?, read_book_state = '완독' 
-        WHERE book_id = ?
+        WHERE book_id = ? AND member_id = ?
         """;
-    int rst = jdbcTemplate.update(sql, readBookReq.getBookRating(), readBookReq.getEndDate(), readBookReq.getMemo(), readBookReq.getBookId());
+    int rst = jdbcTemplate.update(sql, readBookReq.getBookRating(), readBookReq.getEndDate(), readBookReq.getMemo(), readBookReq.getBookId(), memberId);
     return rst > 0;
   }
 
@@ -138,19 +138,19 @@ public class ReadBookDao {
   }
 
   // 내 서재 - 완독 상세 조회
-  public ReadBookReq readedInfo(Long bookId) {
+  public ReadBookRes readedInfo(Long memberId, Long bookId) {
     String sql = """
         SELECT read_book_rating, read_book_end, read_book_memo 
-        FROM read_book
-        WHERE book_id = ?
+        FROM read_book 
+        WHERE member_id = ? AND book_id = ?
         """;
     return jdbcTemplate.queryForObject(sql, (rs, n) -> {
-      ReadBookReq readBookReq = new ReadBookReq();
-      readBookReq.setBookRating(rs.getDouble("read_book_rating"));
-      readBookReq.setEndDate(rs.getTimestamp("read_book_end").toLocalDateTime());
-      readBookReq.setMemo(rs.getString("read_book_memo"));
-      return readBookReq;
-    }, bookId);
+      ReadBookRes readBookRes = new ReadBookRes();
+      readBookRes.setReadBookRating(rs.getDouble("read_book_rating"));
+      readBookRes.setReadBookEnd(rs.getTimestamp("read_book_end").toLocalDateTime());
+      readBookRes.setReadBookMemo(rs.getString("read_book_memo"));
+      return readBookRes;
+    }, memberId, bookId);
   }
 
   // 독서 분석 리포트
@@ -158,11 +158,11 @@ public class ReadBookDao {
   public List<ReadBookRes> getRawData(Long memberId) {
     String sql = """
         SELECT rb.book_id, rb.read_book_start, rb.read_book_end, rb.read_book_rating, 
-               b.book_genre, b.book_title, b.book_writer
+               b.book_genre, b.book_title, b.book_writer 
         FROM read_book rb 
         JOIN book b 
-        ON rb.book_id = b.book_id
-        WHERE rb.member_id = ? AND rb.read_book_state = '완독'
+        ON rb.book_id = b.book_id 
+        WHERE rb.member_id = ? AND rb.read_book_state = '완독' 
         ORDER BY rb.read_book_end DESC
         """;
     return jdbcTemplate.query(sql, (rs, n) -> {
