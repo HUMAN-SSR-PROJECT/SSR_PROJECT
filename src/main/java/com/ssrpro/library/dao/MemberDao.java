@@ -61,4 +61,10 @@ public class MemberDao {
                 .rule(rs.getString("MEMBER_RULE"))
                 .build();
     }
+    // 이메일 중복 체크
+    public boolean existsByEmail(String email) {
+        String sql = "SELECT COUNT(*) FROM MEMBERS WHERE MEMBER_EMAIL = ?";
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, email);
+        return count != null && count > 0;
+    }
 }
