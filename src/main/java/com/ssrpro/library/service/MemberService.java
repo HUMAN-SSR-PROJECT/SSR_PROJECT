@@ -2,10 +2,7 @@ package com.ssrpro.library.service;
 
 import com.ssrpro.library.dao.MemberDao;
 import com.ssrpro.library.dto.entity.Members;
-import com.ssrpro.library.dto.request.FindIdReq;
-import com.ssrpro.library.dto.request.FindPwReq;
-import com.ssrpro.library.dto.request.LoginReq;
-import com.ssrpro.library.dto.request.SignUpReq;
+import com.ssrpro.library.dto.request.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -41,12 +38,14 @@ public class MemberService {
     }
 
     // 로그인
-    public boolean login(LoginReq req) {
+    public Optional<Members> login(LoginReq req) {
         if (req.getEmail() == null || req.getPassword() == null) {
-            return false;
+            return Optional.empty();
         }
         req.setEmail(req.getEmail().trim());
-        return memberDao.login(req).isPresent();
+        // Dao에서 이미 이메일과 비밀번호가 맞는 유저를 찾아오므로,
+        // 여기서 바로 객체를 반환하면 컨트롤러에서 findByEmail을 다시 부를 필요가 없습니다.
+        return memberDao.login(req);
     }
 
     // 아이디 찾기
@@ -69,5 +68,36 @@ public class MemberService {
         req.setEmail(req.getEmail().trim());
 
         return memberDao.findPw(req);
+    }
+
+    // 임시 비밀번호 발송 구역
+    public Optional<String> issueTempPassword(FindPwReq req) {
+        if (this.findPw(req)) {
+            String tempPw = java.util.UUID.randomUUID().toString().substring(0, 8);
+            int result = memberDao.updatePassword(req.getEmail().trim(), tempPw);
+            return result > 0 ? Optional.of(tempPw) : Optional.empty();
+        }
+        return Optional.empty();
+    }
+
+    // 마이페이지
+    public boolean updateProfile(Long memberId, MypageUpdateReq req) {
+        // 1. DTO를 엔티티로 변환 (image_bc7ccb.png의 toEntity 활용)
+        Members member = req.toEntity(memberId);
+
+        // 2. DB 업데이트 실행
+        int result = memberDao.updateMemberProfile(member);
+
+        return result > 0;
+    }
+    // 관리자 판별
+    public boolean isAdmin(Members member) {
+        // null 체크와 대소문자 구분 없는 비교로 안전성 강화
+        return member != null && "ADMIN".equalsIgnoreCase(member.getRule());
+    }
+    // 정보 가져오기 로직
+    public Optional<Members> getMemberByEmail(String email) {
+        if (email == null || email.isBlank()) return Optional.empty();
+        return memberDao.findByEmail(email.trim());
     }
 }
