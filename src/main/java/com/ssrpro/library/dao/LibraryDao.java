@@ -45,4 +45,11 @@ public class LibraryDao {
 
         return rst > 0;
     }
+
+    // 도서관 총 개수
+    public int countAllLibrary(){
+        String sql = "SELECT COUNT(*) FROM LIBRARY";
+        int rst =  jdbcTemplate.queryForObject(sql, Integer.class);
+        return rst;
+    }
 }
