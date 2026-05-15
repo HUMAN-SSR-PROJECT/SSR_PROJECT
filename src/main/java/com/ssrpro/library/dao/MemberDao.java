@@ -9,6 +9,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -56,15 +57,107 @@ public class MemberDao {
                 .password(rs.getString("MEMBER_PASSWORD"))
                 .name(rs.getString("MEMBER_NAME"))
                 .nickname(rs.getString("MEMBER_NICKNAME"))
-                .birth(rs.getDate("MEMBER_BIRTH").toLocalDate())
+                // 날짜 변환 시 null 체크를 추가하면 더 안전합니다.
+                .birth(rs.getDate("MEMBER_BIRTH") != null ? rs.getDate("MEMBER_BIRTH").toLocalDate() : null)
                 .state(rs.getString("MEMBER_STATE"))
-                .rule(rs.getString("MEMBER_RULE"))
+                .rule(rs.getString("MEMBER_RULE")) // ADMIN 여부 판별의 핵심 필드
                 .build();
     }
     // 이메일 중복 체크
     public boolean existsByEmail(String email) {
         String sql = "SELECT COUNT(*) FROM MEMBERS WHERE MEMBER_EMAIL = ?";
-        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, email);
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, email.trim());
         return count != null && count > 0;
+    }
+
+    /**
+     * 이름, 이메일, 생년월일이 모두 일치하는 회원이 있는지 확인 (가입 여부 확인)
+     */
+    public boolean existsByDetails(FindPwReq req) {
+        String sql = "SELECT COUNT(*) FROM MEMBERS " +
+                "WHERE MEMBER_NAME = ? AND MEMBER_EMAIL = ? AND MEMBER_BIRTH = ?";
+
+        // queryForObject를 사용해 숫자(Count)를 가져온 뒤 0보다 큰지 확인합니다.
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class,
+                req.getName().trim(),
+                req.getEmail().trim(),
+                req.getBirth());
+
+        return count != null && count > 0;
+    }
+    // 마이페이지 수정
+    public int updateMemberProfile(Members member) {
+        String sql = "UPDATE MEMBERS SET MEMBER_NICKNAME = ?, MEMBER_IMGURL = ?, " +
+                "MEMBER_INTRO = ?, MEMBER_ADDR = ? WHERE MEMBER_ID = ?";
+
+        return jdbcTemplate.update(sql,
+                member.getNickname(),
+                member.getImgUrl(),
+                member.getIntro(),
+                member.getAddr(),
+                member.getId());
+    }
+    // 마이페이지 상세 조회 (ID로 회원 정보 가져오기)
+    public Optional<Members> findById(Long id) {
+        String sql = "SELECT * FROM MEMBERS WHERE MEMBER_ID = ?";
+        try {
+            return Optional.ofNullable(jdbcTemplate.queryForObject(sql, memberRowMapper(), id));
+        } catch (Exception e) {
+            return Optional.empty();
+        }
+    }
+    // 관리자 전체 회원 조회 및 검색 @param keyword : 검색어 (빈값일 경우 전체 조회)
+    public List<Members> findAll(String keyword) {
+        StringBuilder sql = new StringBuilder("SELECT * FROM MEMBERS");
+
+        // 키워드가 있을 경우에만 WHERE 절 추가
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            sql.append(" WHERE MEMBER_EMAIL LIKE ? OR MEMBER_NAME LIKE ? OR MEMBER_NICKNAME LIKE ?");
+            String searchTag = "%" + keyword.trim() + "%";
+            return jdbcTemplate.query(sql.toString(), memberRowMapper(), searchTag, searchTag, searchTag);
+        }
+
+        // 키워드가 없으면 전체 조회
+        return jdbcTemplate.query(sql.toString(), memberRowMapper());
+    }
+
+    /**
+     * 회원 상태 변경 (정상, 정지 등 - image_b1185e.png 관리자 기능 대응)
+     */
+    public int updateMemberState(Long id, String state) {
+        String sql = "UPDATE MEMBERS SET MEMBER_STATE = ? WHERE MEMBER_ID = ?";
+        return jdbcTemplate.update(sql, state, id);
+    }
+
+    /**
+     * 회원 삭제 (관리자 기능)
+     */
+    public int deleteMember(Long id) {
+        String sql = "DELETE FROM MEMBERS WHERE MEMBER_ID = ?";
+        return jdbcTemplate.update(sql, id);
+    }
+    /**
+     * 이메일로 회원 정보 전체 조회 (세션 최신화 및 로그인 처리에 필수)
+     */
+    public Optional<Members> findByEmail(String email) {
+        String sql = "SELECT * FROM MEMBERS WHERE MEMBER_EMAIL = ?";
+        // query를 사용하면 결과가 없을 때 예외 대신 빈 리스트를 반환하므로 .stream().findFirst()가 안전합니다.
+        return jdbcTemplate.query(sql, memberRowMapper(), email.trim())
+                .stream()
+                .findFirst();
+    }
+    // 총 회원 수 조회
+    public int getTotalMemberCount() {
+        String sql = "SELECT COUNT(*) FROM MEMBERS";
+        // 결과가 단일 숫아이므로 queryForObject가 가장 적합합니다.
+        return jdbcTemplate.queryForObject(sql, Integer.class);
+    }
+    // 최근 가입 회원 (10명)
+    public List<Members> findRecentMembers() {
+        // Oracle 기준: 가입일 내림차순 정렬 후 상위 10개 행 선택
+        String sql = "SELECT * FROM MEMBERS ORDER BY CREATED_AT DESC FETCH FIRST 10 ROWS ONLY";
+
+        // 이전에 만들어둔 memberRowMapper를 그대로 재사용합니다.
+        return jdbcTemplate.query(sql, memberRowMapper());
     }
 }
