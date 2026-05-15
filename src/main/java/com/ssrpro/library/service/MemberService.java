@@ -130,4 +130,8 @@ public class MemberService {
     public int getTotalCount() {
         return memberDao.getTotalMemberCount();
     }
+    // 대시보드용 최근 가입 회원 10명 목록 획득
+    public List<Members> getRecentMembers() {
+        return memberDao.findRecentMembers();
+    }
 }

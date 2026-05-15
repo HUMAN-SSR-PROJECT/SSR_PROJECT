@@ -185,6 +185,10 @@ public class MemberController {
         model.addAttribute("memberList", memberList);
         model.addAttribute("keyword", keyword); // 검색어 유지용
 
+        // 3. 최근 가입 회원 10명 목록 추가 (신규 로직)
+        List<Members> recentMembers = memberService.getRecentMembers();
+        model.addAttribute("recentMembers", recentMembers);
+
         return "admin/main";
     }
     // 상태 변경 API (AJAX 호출용)

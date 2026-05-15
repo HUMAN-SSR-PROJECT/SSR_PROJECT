@@ -152,4 +152,12 @@ public class MemberDao {
         // 결과가 단일 숫아이므로 queryForObject가 가장 적합합니다.
         return jdbcTemplate.queryForObject(sql, Integer.class);
     }
+    // 최근 가입 회원 (10명)
+    public List<Members> findRecentMembers() {
+        // Oracle 기준: 가입일 내림차순 정렬 후 상위 10개 행 선택
+        String sql = "SELECT * FROM MEMBERS ORDER BY CREATED_AT DESC FETCH FIRST 10 ROWS ONLY";
+
+        // 이전에 만들어둔 memberRowMapper를 그대로 재사용합니다.
+        return jdbcTemplate.query(sql, memberRowMapper());
+    }
 }
