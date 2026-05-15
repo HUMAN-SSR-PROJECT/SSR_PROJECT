@@ -15,11 +15,8 @@ import jakarta.validation.constraints.Positive;
 
 /**
  * AdminController
- *
- * 관리자 전용 기능을 담당하는 MVC Controller
- *
- * Controller는 “요청/응답”만 담당하고
- * 비즈니스 로직은 Service에서 처리하는 구조 유지
+ * - 독서 통계 및 도서 관리 통합 (/admin/books, /admin/stats)
+ * - 회원 관리 통합 검색 및 상태 관리 (state 변수 사용)
  */
 @Controller
 @RequestMapping("/admin")
@@ -34,13 +31,10 @@ public class AdminController {
 
   /**
    * 관리자 대시보드
-   *
-   * [개선 포인트]
-   * - Map 대신 DTO로 변경 가능하지만 현재는 단순 통계라 유지
+   * 전체 도서 수와 전체 회원 수만 깔끔하게 표시합니다.
    */
   @GetMapping("/dashboard")
   public String dashboard(Model model) {
-
     model.addAttribute("totalBooks", bookService.countAllBooks());
     model.addAttribute("totalMembers", memberService.countAllMembers());
 
@@ -48,83 +42,63 @@ public class AdminController {
   }
 
   /**
-   * 회원 목록 조회
+   * [통합] 도서 목록 및 독서 통계
    */
-  @GetMapping("/members")
-  public String memberList(
-      @RequestParam(required = false) String searchType,
+  @GetMapping({ "/books", "/stats" })
+  public String bookList(
       @RequestParam(required = false, defaultValue = "") String keyword,
       Model model) {
 
-    model.addAttribute(
-        "members",
-        memberService.searchMembers(searchType, keyword.trim()));
+    // 도서 목록 및 검색
+    BookSearchReq req = BookSearchReq.builder()
+        .keyword(keyword.trim())
+        .build();
+    model.addAttribute("books", bookService.searchBooks(req));
+    model.addAttribute("keyword", keyword.trim());
+
+    // 통합된 독서 통계 데이터
+    model.addAttribute("globalStats", readBookService.getGlobalReadingStats());
+
+    return "admin/book-manage";
+  }
+
+  /**
+   * 회원 목록 조회
+   * searchType을 버리고 keyword 하나로 통합 검색을 수행합니다.
+   */
+  @GetMapping("/members")
+  public String memberList(
+      @RequestParam(required = false, defaultValue = "") String keyword,
+      Model model) {
+
+    // 상단 현황은 요청하신 대로 전체 회원수만 표시합니다.
+    model.addAttribute("totalCount", memberService.countAllMembers());
+
+    // 통합 검색 (Service 내부에서 OR 조건으로 처리한다고 가정)
+    model.addAttribute("members", memberService.searchMembers(keyword.trim()));
+    model.addAttribute("keyword", keyword.trim());
 
     return "admin/member-list";
   }
 
   /**
    * 회원 상태 변경
-   *
-   * [개선 포인트]
-   * - String → Enum(MemberStatus) 사용 권장
-   * - 잘못된 상태값 입력 방지
    */
   @PostMapping("/members/{id}/update-status")
   public String updateMemberStatus(
       @PathVariable @Positive Long id,
-      @RequestParam MemberStatus status) {
+      @RequestParam MemberStatus state) {
 
-    memberService.updateStatus(id, status);
-
+    memberService.updateStatus(id, state);
     return "redirect:/admin/members";
   }
 
   /**
-   * 도서 목록 조회
-   */
-  @GetMapping("/books")
-  public String bookList(
-      @RequestParam(required = false, defaultValue = "") String keyword,
-      Model model) {
-
-    BookSearchReq req = BookSearchReq.builder()
-        .keyword(keyword.trim())
-        .build();
-
-    model.addAttribute("books", bookService.searchBooks(req));
-
-    return "admin/book-list";
-  }
-
-  /**
    * 도서 삭제
-   *
-   * [주의]
-   * Soft Delete[데이터를 “삭제하지 않고 삭제된 것처럼 처리”] 확장 가능 구조
    */
   @PostMapping("/books/{id}/delete")
   public String deleteBook(@PathVariable @Positive Long id) {
-
     bookService.deleteBook(id);
-
     return "redirect:/admin/books";
-  }
-
-  /**
-   * 독서 통계 조회
-   *
-   * [설계]
-   * Controller는 데이터 전달만 담당
-   * 통계 계산은 Service에서 처리
-   */
-  @GetMapping("/stats")
-  public String readingStats(Model model) {
-
-    model.addAttribute(
-        "globalStats",
-        readBookService.getGlobalReadingStats());
-
-    return "admin/stats";
   }
 }
