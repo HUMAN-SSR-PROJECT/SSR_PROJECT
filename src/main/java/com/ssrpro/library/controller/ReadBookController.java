@@ -20,69 +20,41 @@ import org.springframework.web.bind.annotation.RequestBody;
 public class ReadBookController {
   private final ReadBookService readBookService;
 
-  @GetMapping("/readbook/{bookId}")
-  public String readBook(Model model, @PathVariable Long bookId) {
+  @GetMapping("/readbook")
+  public String readBook(Model model, @RequestParam(required = false) Long bookId) {
     // 내 서재 - 읽을 책 조회
-    try {
-      model.addAttribute("readSoonList", readBookService.readSoonList(memberId));
-    } catch (Exception e) {
-      model.addAttribute("readSoonListError", e.getMessage());
-    }
+    model.addAttribute("readSoonList", readBookService.readSoonList(memberId));
 
     // 내 서재 - 읽는 중 조회
-    try {
-      model.addAttribute("readingList", readBookService.readingList(memberId));
-    } catch (Exception e) {
-      model.addAttribute("readingListError", e.getMessage());
-    }
+    model.addAttribute("readingList", readBookService.readingList(memberId));
     
     // 내 서재 - 완독 조회
-    try {
-      model.addAttribute("readedList", readBookService.readedList(memberId));
-    } catch (Exception e) {
-      model.addAttribute("readedListError", e.getMessage());
-    }
+     model.addAttribute("readedList", readBookService.readedList(memberId));
 
     // 내 서재 - 완독 상세 조회
-    try {
+    if (bookId != null) {
       model.addAttribute("readedInfo", readBookService.readedInfo(memberId, bookId));
-    } catch (Exception e) {
-      model.addAttribute("readedInfoError", e.getMessage());
     }
-    
+
     return "mylib/readbook";
   }
 
-  // 읽을 책 추가
-  @PostMapping("/readsoon/{bookId}/add")
+  // 읽을 책 추가 / 삭제
+  @PostMapping("/readbook/{bookId}/soon")
   public String addToReadSoon(@PathVariable Long bookId) {
     readBookService.addToReadSoon(memberId, bookId);
     return "redirect:/mylib/readbook";
   }
 
-  // 내 서재 - 읽을 책 삭제
-  @PostMapping("/readsoon/{bookId}/delete")
-  public String deleteReadSoon(@PathVariable Long bookId) {
-    readBookService.deleteReadSoon(memberId, bookId);
-    return "redirect:/mylib/readbook";
-  }
-
-  // 내 서재 - 읽을 책 → 읽는 중
-  @PostMapping("/readbook/{bookId}/add")
+  // 내 서재 - 읽는 중 추가 / 삭제
+  @PostMapping("/readbook/{bookId}/reading")
   public String addToReading(@PathVariable Long bookId) {
     readBookService.addToReading(memberId, bookId);
     return "redirect:/mylib/readbook";
   }
   
-  // 내 서재 - 읽는 중 / 완독 삭제
-  @PostMapping("/readbook/{bookId}/delete")
-  public String deleteReading(@PathVariable Long bookId) {
-    readBookService.deleteReading(memberId, bookId);
-    return "redirect:/mylib/readbook";
-  }
-  
   // 내 서재 - 읽는 중 → 완독, 완독 상세 수정
-  @PostMapping("/readbook/{bookId}/update")
+  @PostMapping("/readbook/{bookId}/readed")
   public String changeToReaded(@PathVariable Long bookId) {
     readBookService.changeToReaded(memberId, bookId);
     return "redirect:/mylib/readbook";
@@ -94,5 +66,4 @@ public class ReadBookController {
     model.addAttribute("rawDate", readBookService.getRawData(memberId));
     return "mylib/stats";
   }
-  
 }

@@ -24,14 +24,24 @@ public class ReadBookDao {
     return rst != null && rst > 0;
   }
 
-  // 읽는 중/완독 테이블 중복 확인
-  public boolean isReadBookDuplicate(Long memberId, Long bookId) {
+  // 읽는 중/완독 테이블 중복 확인 (1 : 중복 없음, 2 : 읽는 중, 3 : 완독)
+  public int isReadBookDuplicate(Long memberId, Long bookId) {
     String sql = """
-        SELECT COUNT(*) FROM read_book WHERE member_id = ? AND book_id = ?
+        SELECT CASE
+                WHEN read_book_state = '읽는 중' THEN 2
+                WHEN read_book_state = '완독' THEN 3
+               END AS state
+        FROM read_book
+        WHERE member_id = ? AND book_id = ?
         """;
-    Integer rst = jdbcTemplate.queryForObject(sql, Integer.class, memberId, bookId);
+    List<Integer> rst = jdbcTemplate.query(
+      sql,
+      (rs, n) -> rs.getInt("state"),
+      memberId,
+      bookId
+    );
 
-    return rst != null && rst > 0;
+    return rst.isEmpty() ? 1 : rst.get(0);
   }
 
   // 읽을 책 추가

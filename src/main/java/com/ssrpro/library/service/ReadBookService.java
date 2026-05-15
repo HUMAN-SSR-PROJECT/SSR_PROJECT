@@ -20,22 +20,13 @@ public class ReadBookService {
   private final ReadBookDao readBookDao;
 
   // 아래 memberId는 전부 security에서 꺼내올 예정
-  // 읽을 책 추가
+  // 읽을 책 추가 / 삭제
   @Transactional
   public boolean addToReadSoon(Long memberId, Long bookId) {
     if (readBookDao.isReadSoonDuplicate(memberId, bookId)) {
-      throw new IllegalStateException("이미 등록되어 있습니다.");
+      return readBookDao.deleteReadSoon(memberId, bookId);
     }
     return readBookDao.addToReadSoon(memberId, bookId);
-  }
-
-  // 내 서재 - 읽을 책 삭제
-  @Transactional
-  public boolean deleteReadSoon(Long memberId, Long bookId) {
-    if (!readBookDao.isReadSoonDuplicate(memberId, bookId)) {
-      throw new IllegalStateException("등록되어있지 않은 책입니다.");
-    }
-    return readBookDao.deleteReadSoon(memberId, bookId);
   }
 
   // 내 서재 - 읽을 책 전체 조회
@@ -44,13 +35,21 @@ public class ReadBookService {
     return (readSoonRes != null) ? readSoonRes : Collections.emptyList();
   }
 
-  // 내 서재 - 읽을 책 → 읽는 중
+  // 내 서재 - 읽는 중 추가 / 삭제 (읽는 중 일때만)
+  // 1 : 데이터 없음, 2 : 읽는 중, 3 : 완독
   @Transactional
   public boolean addToReading(Long memberId, Long bookId) {
-    if (readBookDao.isReadBookDuplicate(memberId, bookId)) {
-      throw new IllegalStateException("이미 등록되어 있습니다.");
+    int state = readBookDao.isReadBookDuplicate(memberId, bookId);
+    switch (state) {
+      case 1:
+        return readBookDao.addToReading(memberId, bookId);
+      case 2:
+        return readBookDao.deleteReading(memberId, bookId);
+      case 3:
+        throw new IllegalStateException("완독한 책은 삭제할 수 없습니다.");
+      default:
+        throw new IllegalStateException("알 수 없는 상태입니다.");
     }
-    return readBookDao.addToReading(memberId, bookId);
   }
 
   // 내 서재 - 읽는 중 전체 조회
@@ -59,19 +58,10 @@ public class ReadBookService {
     return (readBookRes != null) ? readBookRes : Collections.emptyList();
   }
 
-  // 내 서재 - 읽는 중 / 완독 삭제
-  @Transactional
-  public boolean deleteReading(Long memberId, Long bookId) {
-    if (!readBookDao.isReadBookDuplicate(memberId, bookId)) {
-      throw new IllegalStateException("등록되어있지 않은 책입니다.");
-    }
-    return readBookDao.deleteReading(memberId, bookId);
-  }
-
   // 내 서재 - 읽는 중 → 완독, 완독 상세 수정
   @Transactional
   public boolean changeToReaded(ReadBookReq readBookReq, Long memberId) {
-    if (!readBookDao.isReadBookDuplicate(memberId, memberId)) {
+    if (readBookDao.isReadBookDuplicate(memberId, readBookReq.getBookId()) == 1) {
       throw new IllegalStateException("존재하지 않는 정보입니다.");
     }
     return readBookDao.changeToReaded(readBookReq, memberId);
@@ -85,6 +75,9 @@ public class ReadBookService {
 
   // 내 서재 - 완독 상세 조회
   public ReadBookRes readedInfo(Long memberId, Long bookId) {
+    if (readBookDao.isReadBookDuplicate(memberId, bookId) == 1) {
+      throw new IllegalStateException("존재하지 않는 정보입니다.");
+    }
     ReadBookRes readBookRes = readBookDao.readedInfo(memberId, bookId);
     return readBookRes;
   }
