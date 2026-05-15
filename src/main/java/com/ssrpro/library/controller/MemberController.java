@@ -83,12 +83,12 @@ public class MemberController {
     @PostMapping("/find-pw")
     @ResponseBody
     public String findPw(FindPwReq req) {
-        // 임시 비밀번호 발급 대신 실제 비밀번호 조회 서비스 호출
-        Optional<String> password = memberService.findPwValue(req);
-
-        return password
-                .map(pw -> "찾으시는 비밀번호는: [" + pw + "] 입니다. 보안을 위해 로그인 후 변경을 권장합니다.")
-                .orElse("입력하신 정보와 일치하는 회원이 없습니다.");
+        // 단순 true/false 결과만 확인
+        if (memberService.checkMemberExists(req)) {
+            return "true";  // 혹은 "인증 성공" 등의 메시지
+        } else {
+            return "false"; // 혹은 "인증 실패" 등의 메시지
+        }
     }
     // 비밀번호 찾기 이동
     @GetMapping("/find-pw")

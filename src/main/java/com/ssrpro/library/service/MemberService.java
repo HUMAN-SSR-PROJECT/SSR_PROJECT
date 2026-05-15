@@ -70,16 +70,17 @@ public class MemberService {
 
         return memberDao.findPw(req);
     }
-    // 이메일, 이름, 생년월이로 비밀번호 찾기
-    // 정보가 일치하면 실제 비밀번호 반환
-    public Optional<String> findPwValue(FindPwReq req) {
+    /**
+     * 비밀번호 찾기 전 단계: 회원 정보 일치 여부 확인
+     */
+    public boolean checkMemberExists(FindPwReq req) {
+        // 필수 데이터 누락 시 즉시 false 반환
         if (req.getName() == null || req.getEmail() == null || req.getBirth() == null) {
-            return Optional.empty();
+            return false;
         }
-        req.setName(req.getName().trim());
-        req.setEmail(req.getEmail().trim());
 
-        return memberDao.findPwValue(req);
+        // Dao를 통해 DB에 일치하는 정보가 있는지 확인
+        return memberDao.existsByDetails(req);
     }
     // 마이페이지 수정
     public boolean updateProfile(Long memberId, MypageUpdateReq req) {

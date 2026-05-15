@@ -70,14 +70,21 @@ public class MemberDao {
         return count != null && count > 0;
     }
 
-    // 이메일, 이름, 생년월일로 비밀번호 찾기
-    public Optional<String> findPwValue(FindPwReq req) {
-        String sql = "SELECT MEMBER_PASSWORD FROM MEMBERS WHERE MEMBER_NAME = ? AND MEMBER_EMAIL = ? AND MEMBER_BIRTH = ?";
-        return jdbcTemplate.query(sql, (rs, rowNum) -> rs.getString("MEMBER_PASSWORD"),
-                        req.getName().trim(), req.getEmail().trim(), req.getBirth())
-                .stream().findFirst();
-    }
+    /**
+     * 이름, 이메일, 생년월일이 모두 일치하는 회원이 있는지 확인 (가입 여부 확인)
+     */
+    public boolean existsByDetails(FindPwReq req) {
+        String sql = "SELECT COUNT(*) FROM MEMBERS " +
+                "WHERE MEMBER_NAME = ? AND MEMBER_EMAIL = ? AND MEMBER_BIRTH = ?";
 
+        // queryForObject를 사용해 숫자(Count)를 가져온 뒤 0보다 큰지 확인합니다.
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class,
+                req.getName().trim(),
+                req.getEmail().trim(),
+                req.getBirth());
+
+        return count != null && count > 0;
+    }
     // 마이페이지 수정
     public int updateMemberProfile(Members member) {
         String sql = "UPDATE MEMBERS SET MEMBER_NICKNAME = ?, MEMBER_IMGURL = ?, " +
