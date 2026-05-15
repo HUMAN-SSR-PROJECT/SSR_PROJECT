@@ -9,6 +9,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -69,13 +70,15 @@ public class MemberDao {
         return count != null && count > 0;
     }
 
-    // 임시 비밀번호 발송
-    public int updatePassword(String email, String tempPw) {
-        String sql = "UPDATE MEMBERS SET MEMBER_PASSWORD = ? WHERE MEMBER_EMAIL = ?";
-        return jdbcTemplate.update(sql, tempPw, email);
+    // 이메일, 이름, 생년월일로 비밀번호 찾기
+    public Optional<String> findPwValue(FindPwReq req) {
+        String sql = "SELECT MEMBER_PASSWORD FROM MEMBERS WHERE MEMBER_NAME = ? AND MEMBER_EMAIL = ? AND MEMBER_BIRTH = ?";
+        return jdbcTemplate.query(sql, (rs, rowNum) -> rs.getString("MEMBER_PASSWORD"),
+                        req.getName().trim(), req.getEmail().trim(), req.getBirth())
+                .stream().findFirst();
     }
 
-    // 마이페이지
+    // 마이페이지 수정
     public int updateMemberProfile(Members member) {
         String sql = "UPDATE MEMBERS SET MEMBER_NICKNAME = ?, MEMBER_IMGURL = ?, " +
                 "MEMBER_INTRO = ?, MEMBER_ADDR = ? WHERE MEMBER_ID = ?";
@@ -87,10 +90,51 @@ public class MemberDao {
                 member.getAddr(),
                 member.getId());
     }
-    // 이메일로 회원 정보 조회
+    // 마이페이지 상세 조회 (ID로 회원 정보 가져오기)
+    public Optional<Members> findById(Long id) {
+        String sql = "SELECT * FROM MEMBERS WHERE MEMBER_ID = ?";
+        try {
+            return Optional.ofNullable(jdbcTemplate.queryForObject(sql, memberRowMapper(), id));
+        } catch (Exception e) {
+            return Optional.empty();
+        }
+    }
+    // 관리자 전체 회원 조회 및 검색 @param keyword : 검색어 (빈값일 경우 전체 조회)
+    public List<Members> findAll(String keyword) {
+        StringBuilder sql = new StringBuilder("SELECT * FROM MEMBERS");
+
+        // 키워드가 있을 경우에만 WHERE 절 추가
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            sql.append(" WHERE MEMBER_EMAIL LIKE ? OR MEMBER_NAME LIKE ? OR MEMBER_NICKNAME LIKE ?");
+            String searchTag = "%" + keyword.trim() + "%";
+            return jdbcTemplate.query(sql.toString(), memberRowMapper(), searchTag, searchTag, searchTag);
+        }
+
+        // 키워드가 없으면 전체 조회
+        return jdbcTemplate.query(sql.toString(), memberRowMapper());
+    }
+
+    /**
+     * 회원 상태 변경 (정상, 정지 등 - image_b1185e.png 관리자 기능 대응)
+     */
+    public int updateMemberState(Long id, String state) {
+        String sql = "UPDATE MEMBERS SET MEMBER_STATE = ? WHERE MEMBER_ID = ?";
+        return jdbcTemplate.update(sql, state, id);
+    }
+
+    /**
+     * 회원 삭제 (관리자 기능)
+     */
+    public int deleteMember(Long id) {
+        String sql = "DELETE FROM MEMBERS WHERE MEMBER_ID = ?";
+        return jdbcTemplate.update(sql, id);
+    }
+    /**
+     * 이메일로 회원 정보 전체 조회 (세션 최신화 및 로그인 처리에 필수)
+     */
     public Optional<Members> findByEmail(String email) {
         String sql = "SELECT * FROM MEMBERS WHERE MEMBER_EMAIL = ?";
-        // query를 사용하면 결과가 없을 때 예외 대신 빈 리스트를 반환하므로 더 안전합니다.
+        // query를 사용하면 결과가 없을 때 예외 대신 빈 리스트를 반환하므로 .stream().findFirst()가 안전합니다.
         return jdbcTemplate.query(sql, memberRowMapper(), email.trim())
                 .stream()
                 .findFirst();

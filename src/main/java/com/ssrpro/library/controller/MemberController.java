@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import java.util.List;
 import java.util.Optional;
 
 @Controller
@@ -27,6 +28,14 @@ public class MemberController {
             return "회원가입 성공! 로그인 페이지로 이동하세요.";
         }
         return "회원가입 실패: 중복된 이메일이거나 입력 형식이 잘못되었습니다.";
+    }
+    // 회원가입 이동
+    @GetMapping("/join")
+    public String joinForm(HttpSession session) {
+        if (session.getAttribute("loginUser") != null) {
+            return "redirect:/";
+        }
+        return "member/join";
     }
 
     // 로그인 처리
@@ -47,6 +56,15 @@ public class MemberController {
 
         return "fail";
     }
+    // 로그인 이동
+    @GetMapping("/login")
+    public String loginForm(HttpSession session) {
+        // 이미 로그인 상태면 메인페이지로 이동
+        if (session.getAttribute("loginUser") != null) {
+            return "redirect:/";
+        }
+        return "member/login";
+    }
     // 아이디 찾기
     @PostMapping("/find-id")
     @ResponseBody
@@ -55,33 +73,56 @@ public class MemberController {
         return email.map(s -> "찾으시는 이메일은: " + s)
                 .orElse("해당 정보로 가입된 아이디가 없습니다.");
     }
+    // 아이디 찾기 이동
+    @GetMapping("/find_id")
+    public String findIdForm() {
+        return "member/findId";
+    }
 
     // 비밀번호 찾기
     @PostMapping("/find-pw")
     @ResponseBody
     public String findPw(FindPwReq req) {
-        Optional<String> tempPassword = memberService.issueTempPassword(req);
-        return tempPassword
-                .map(pw -> "임시 비밀번호가 발급되었습니다: [" + pw + "] 로그인 후 반드시 비밀번호를 변경해주세요.")
-                .orElse("입력하신 정보가 일치하지 않아 비밀번호를 발급할 수 없습니다.");
+        // 임시 비밀번호 발급 대신 실제 비밀번호 조회 서비스 호출
+        Optional<String> password = memberService.findPwValue(req);
+
+        return password
+                .map(pw -> "찾으시는 비밀번호는: [" + pw + "] 입니다. 보안을 위해 로그인 후 변경을 권장합니다.")
+                .orElse("입력하신 정보와 일치하는 회원이 없습니다.");
+    }
+    // 비밀번호 찾기 이동
+    @GetMapping("/find-pw")
+    public String findPwForm() {
+        return "member/findPw";
     }
 
     // 마이페이지 수정
     @PostMapping("/update")
     @ResponseBody
     public String updateProfile(MypageUpdateReq req, HttpSession session) {
+        // 1. 세션에서 로그인 ID 확인
         Long loginId = (Long) session.getAttribute("loginId");
-        if (loginId == null) return "로그인이 필요한 서비스입니다.";
+        if (loginId == null) {
+            return "로그인이 필요한 서비스입니다.";
+        }
 
+        // 2. DB 업데이트 실행
         if (memberService.updateProfile(loginId, req)) {
-            // [중요] DB가 수정되었으므로, 세션에 저장된 loginUser 정보도 최신화합니다.
-            // 이메일은 변하지 않는다고 가정하고 기존 이메일로 다시 조회합니다.
-            Members currentMember = (Members) session.getAttribute("loginUser");
-            memberService.getMemberByEmail(currentMember.getEmail())
-                    .ifPresent(updated -> session.setAttribute("loginUser", updated));
+
+            // 3. 세션 최신화 (가장 안전한 방법)
+            // 세션에서 꺼낸 객체가 Members 타입인지 확인 후 진행
+            Object userObj = session.getAttribute("loginUser");
+            if (userObj instanceof Members) {
+                Members currentMember = (Members) userObj;
+
+                // 서비스에서 최신 정보를 다시 가져와 세션에 덮어쓰기
+                memberService.getMemberByEmail(currentMember.getEmail())
+                        .ifPresent(updated -> session.setAttribute("loginUser", updated));
+            }
 
             return "회원 정보가 성공적으로 수정되었습니다.";
         }
+
         return "정보 수정에 실패했습니다. 다시 시도해 주세요.";
     }
 
@@ -95,13 +136,24 @@ public class MemberController {
 
     // 마이페이지 화면 이동
     @GetMapping("/mypage")
-    public String mypageForm(HttpSession session) {
-        // 로그인 체크
-        if (session.getAttribute("loginUser") == null) {
+    public String mypageForm(HttpSession session, org.springframework.ui.Model model) {
+        // 1. 세션에서 로그인된 ID를 꺼냅니다.
+        Long loginId = (Long) session.getAttribute("loginId");
+
+        if (loginId == null) {
             return "redirect:/member/login";
         }
-        // 마이페이지 HTML 파일 이름 (mypage.html) 반환
-        return "member/mypage";
+
+        // 2. DB에서 최신 회원 정보를 조회합니다.
+        Optional<Members> memberOpt = memberService.getMemberById(loginId);
+
+        if (memberOpt.isPresent()) {
+            // 3. 모델에 담아서 HTML로 보냅니다. (화면에서 ${member.nickname} 등으로 사용)
+            model.addAttribute("member", memberOpt.get());
+            return "member/mypage";
+        }
+
+        return "redirect:/"; // 유저 정보가 없으면 메인으로
     }
     // 내 서재로 이동
     @GetMapping("/library")
@@ -118,20 +170,37 @@ public class MemberController {
         return "member/statistics";
     }
     @GetMapping("/admin")
-    public String adminPage(HttpSession session) {
-        // 1. 세션에서 Members 객체를 꺼냅니다. (이메일 String이 아님에 주의!)
+    public String adminPage(HttpSession session, String keyword, org.springframework.ui.Model model) {
+        // 1. 관리자 권한 체크
         Members loginUser = (Members) session.getAttribute("loginUser");
-
-        // 2. 로그인 여부 및 관리자 권한을 서비스 로직으로 체크합니다.
-        if (loginUser == null) {
-            return "redirect:/member/login";
-        }
-
-        if (!memberService.isAdmin(loginUser)) {
-            // 관리자가 아니면 메인으로 쫓아냅니다.
+        if (loginUser == null || !memberService.isAdmin(loginUser)) {
             return "redirect:/";
         }
 
+        // 2. 회원 목록 가져오기 (keyword가 없으면 전체, 있으면 검색)
+        List<Members> memberList = memberService.getAllMembers(keyword);
+        model.addAttribute("memberList", memberList);
+        model.addAttribute("keyword", keyword); // 검색어 유지용
+
         return "admin/main";
+    }
+    // 상태 변경 API (AJAX 호출용)
+    @PostMapping("/admin/update-state")
+    @ResponseBody
+    public String updateState(Long id, String state) {
+        if (memberService.changeMemberState(id, state)) {
+            return "success";
+        }
+        return "fail";
+    }
+
+    // 회원 삭제 API (AJAX 호출용)
+    @PostMapping("/admin/delete")
+    @ResponseBody
+    public String deleteMember(Long id) {
+        if (memberService.removeMember(id)) {
+            return "success";
+        }
+        return "fail";
     }
 }
