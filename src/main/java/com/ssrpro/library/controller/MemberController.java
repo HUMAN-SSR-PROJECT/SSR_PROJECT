@@ -176,6 +176,9 @@ public class MemberController {
         if (loginUser == null || !memberService.isAdmin(loginUser)) {
             return "redirect:/";
         }
+        // 총 회원 수 데이터 추가
+        int totalCount = memberService.getTotalCount();
+        model.addAttribute("totalCount", totalCount);
 
         // 2. 회원 목록 가져오기 (keyword가 없으면 전체, 있으면 검색)
         List<Members> memberList = memberService.getAllMembers(keyword);

@@ -126,4 +126,8 @@ public class MemberService {
         }
         return memberDao.findByEmail(email.trim());
     }
+    // 대시보드용 총 회원 수 획득
+    public int getTotalCount() {
+        return memberDao.getTotalMemberCount();
+    }
 }

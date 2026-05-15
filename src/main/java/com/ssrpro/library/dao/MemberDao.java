@@ -146,4 +146,10 @@ public class MemberDao {
                 .stream()
                 .findFirst();
     }
+    // 총 회원 수 조회
+    public int getTotalMemberCount() {
+        String sql = "SELECT COUNT(*) FROM MEMBERS";
+        // 결과가 단일 숫아이므로 queryForObject가 가장 적합합니다.
+        return jdbcTemplate.queryForObject(sql, Integer.class);
+    }
 }
