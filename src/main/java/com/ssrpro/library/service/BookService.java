@@ -25,14 +25,14 @@ public class BookService {
             return new ArrayList<>();
         }
         return books.stream()
-                .map(book -> BookRes.of(book, new ArrayList<>()))
+                .map(book -> BookRes.of(book))
                 .collect(Collectors.toList());
     }
     // 도서 목록 조회
     public List<BookRes> findAllBooks() {
         List<Book> books = bookDao.findAll();
         return books.stream()
-                .map(book -> BookRes.of(book, new ArrayList<>()))
+                .map(book -> BookRes.of(book))
                 .collect(Collectors.toList());
     }
     // 도서 상세 조회
@@ -41,12 +41,18 @@ public class BookService {
                 .orElseThrow(() -> new RuntimeException("도서를 찾을 수 없습니다."));
         //하드코딩
         Long currentMemberId = 1L;
-        // 해당 도서의 소장 도서관 정보 api로 불러옴
-        // List<String> libraryCodes = libraryApi.search(book.getBookIsbn());
-        List<String> tempLibraryCodes = List.of("LIB001", "LIB002"); // 하드코딩
 
-        return BookRes.of(book, tempLibraryCodes);
+
+        return BookRes.of(book);
     }
+    // 최근 등록 도서
+    public List<BookRes> getRecentBooks() {
+        List<Book> books = bookDao.findRecentBooks();
+        return books.stream()
+                .map(book -> BookRes.of(book))
+                .collect(Collectors.toList());
+    }
+
     // 도서 저장
     public boolean registerBook(String isbn) {
         // 1. 외부 API를 통해 도서의 모든 상세 정보를 가져옴 // api로 불러옴
