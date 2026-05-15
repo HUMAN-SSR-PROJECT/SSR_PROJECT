@@ -82,6 +82,34 @@ public class BookDao {
 
         return result > 0;
     }
+    // 도서 전체 개수
+    public int countAllBooks() {
+        String sql = "SELECT COUNT(*) FROM BOOK";
+        return jdbcTemplate.queryForObject(sql, Integer.class);
+    }
+    // 장르 개수
+    public int countGenreTypes() {
+        // DISTINCT를 써서 중복된 장르명을 하나로 합친 뒤 그 개수를 셉니다.
+        String sql = "SELECT COUNT(DISTINCT BOOK_GENRE) FROM BOOK";
+        return jdbcTemplate.queryForObject(sql, Integer.class);
+    }
+    // 최다 장르명
+    public String findMostCommonGenre() {
+        String sql = "SELECT BOOK_GENRE FROM (" +
+                "SELECT BOOK_GENRE FROM BOOK GROUP BY BOOK_GENRE ORDER BY COUNT(*) DESC" +
+                ") WHERE ROWNUM = 1";
+        try {
+            return jdbcTemplate.queryForObject(sql, String.class);
+        } catch (Exception e) {
+            return "데이터 없음";
+        }
+    }
+    // 도서 삭제
+    public boolean deleteById(Long bookId) {
+        String sql = "DELETE FROM BOOK WHERE BOOK_ID = ?";
+        int result = jdbcTemplate.update(sql, bookId);
+        return result > 0;
+    }
 
 }
 

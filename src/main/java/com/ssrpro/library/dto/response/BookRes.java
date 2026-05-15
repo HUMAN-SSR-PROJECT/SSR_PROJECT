@@ -31,7 +31,7 @@ public class BookRes {
     private LocalDateTime bookCreatedAt;
     private LocalDateTime bookUpdatedAt;
 
-    public static BookRes of(Book book, List<String> libraryCodes) {
+    public static BookRes of(Book book) {
         return BookRes.builder()
                 .bookId(book.getBookId())
                 .bookImg(book.getBookImg())

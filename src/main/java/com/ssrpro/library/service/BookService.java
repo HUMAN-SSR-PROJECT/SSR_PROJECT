@@ -25,14 +25,14 @@ public class BookService {
             return new ArrayList<>();
         }
         return books.stream()
-                .map(book -> BookRes.of(book, new ArrayList<>()))
+                .map(book -> BookRes.of(book))
                 .collect(Collectors.toList());
     }
     // 도서 목록 조회
     public List<BookRes> findAllBooks() {
         List<Book> books = bookDao.findAll();
         return books.stream()
-                .map(book -> BookRes.of(book, new ArrayList<>()))
+                .map(book -> BookRes.of(book))
                 .collect(Collectors.toList());
     }
     // 도서 상세 조회
@@ -45,7 +45,7 @@ public class BookService {
         // List<String> libraryCodes = libraryApi.search(book.getBookIsbn());
         List<String> tempLibraryCodes = List.of("LIB001", "LIB002"); // 하드코딩
 
-        return BookRes.of(book, tempLibraryCodes);
+        return BookRes.of(book);
     }
     // 도서 저장
     public boolean registerBook(String isbn) {
