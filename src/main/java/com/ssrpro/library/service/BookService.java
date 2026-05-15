@@ -41,9 +41,7 @@ public class BookService {
                 .orElseThrow(() -> new RuntimeException("도서를 찾을 수 없습니다."));
         //하드코딩
         Long currentMemberId = 1L;
-        // 해당 도서의 소장 도서관 정보 api로 불러옴
-        // List<String> libraryCodes = libraryApi.search(book.getBookIsbn());
-        List<String> tempLibraryCodes = List.of("LIB001", "LIB002"); // 하드코딩
+
 
         return BookRes.of(book);
     }
