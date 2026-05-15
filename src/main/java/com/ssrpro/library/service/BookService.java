@@ -45,6 +45,14 @@ public class BookService {
 
         return BookRes.of(book);
     }
+    // 최근 등록 도서
+    public List<BookRes> getRecentBooks() {
+        List<Book> books = bookDao.findRecentBooks();
+        return books.stream()
+                .map(book -> BookRes.of(book))
+                .collect(Collectors.toList());
+    }
+
     // 도서 저장
     public boolean registerBook(String isbn) {
         // 1. 외부 API를 통해 도서의 모든 상세 정보를 가져옴 // api로 불러옴

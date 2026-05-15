@@ -46,7 +46,15 @@ public class BookDao {
 
     // 도서 목록 조회
     public List<Book> findAll() {
-        String sql = "SELECT * FROM BOOK ORDER BY BOOK_ID DESC";
+        String sql = "SELECT * FROM BOOK ORDER BY BOOK_CREATED_AT DESC";
+        return jdbcTemplate.query(sql, bookRowMapper);
+    }
+    // 도서 최신순 10개
+    public List<Book> findRecentBooks() {
+        String sql = "SELECT * FROM (" +
+                "  SELECT * FROM BOOK ORDER BY BOOK_CREATED_AT DESC" +
+                ") WHERE ROWNUM <= 10";
+
         return jdbcTemplate.query(sql, bookRowMapper);
     }
 
