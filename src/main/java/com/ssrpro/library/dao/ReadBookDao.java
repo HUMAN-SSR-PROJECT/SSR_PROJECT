@@ -14,6 +14,26 @@ import lombok.RequiredArgsConstructor;
 public class ReadBookDao {
   private final JdbcTemplate jdbcTemplate;
 
+  // 읽을 책 중복 확인
+  public boolean isReadSoonDuplicate(Long memberId, Long bookId) {
+    String sql = """
+        SELECT COUNT(*) FROM read_soon WHERE member_id = ? AND book_id = ?
+        """;
+    Integer rst = jdbcTemplate.queryForObject(sql, Integer.class, memberId, bookId);
+
+    return rst != null && rst > 0;
+  }
+
+  // 읽는 중/완독 테이블 중복 확인
+  public boolean isReadBookDuplicate(Long memberId, Long bookId) {
+    String sql = """
+        SELECT COUNT(*) FROM read_book WHERE member_id = ? AND book_id = ?
+        """;
+    Integer rst = jdbcTemplate.queryForObject(sql, Integer.class, memberId, bookId);
+
+    return rst != null && rst > 0;
+  }
+
   // 읽을 책 추가
   public boolean addToReadSoon(Long memberId, Long bookId) {
     String sql = """
