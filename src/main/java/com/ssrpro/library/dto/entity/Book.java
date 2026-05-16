@@ -3,6 +3,7 @@ package com.ssrpro.library.dto.entity;
 import lombok.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -36,5 +37,7 @@ public class Book {
     private LocalDateTime bookCreatedAt;
     // 수정일
     private LocalDateTime bookUpdatedAt;
+    // 도서관 코드 리스트
+    private List<String> libraryCodes;
 
 }

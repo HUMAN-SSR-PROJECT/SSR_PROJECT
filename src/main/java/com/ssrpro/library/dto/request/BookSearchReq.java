@@ -11,7 +11,7 @@ import lombok.*;
 @Builder
 public class BookSearchReq {
     private String keyword;
-    private String city; // 시.도
-    private String district; //구.군
+    private int city; // 시.도
+    private int district; //구.군
 
 }

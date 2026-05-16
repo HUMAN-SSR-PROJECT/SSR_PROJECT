@@ -28,7 +28,7 @@ public class BookController {
         return "book/search";
     }
     // 도서 검색 실행
-    @PostMapping("/search/execute")
+    @GetMapping("/search/execute")
     public String executeSearch(@ModelAttribute("searchReq") BookSearchReq req, Model model) {
         // 서비스에서 검색 결과 리스트를 가져옴
         List<BookRes> searchResults = bookService.searchBooks(req);

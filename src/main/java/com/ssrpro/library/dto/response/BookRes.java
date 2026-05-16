@@ -30,8 +30,9 @@ public class BookRes {
     private double bookRating;
     private LocalDateTime bookCreatedAt;
     private LocalDateTime bookUpdatedAt;
+    private List<String> libraryCodes;
 
-    public static BookRes of(Book book) {
+    public static BookRes of(Book book, List<String> libraryCodes) {
         return BookRes.builder()
                 .bookId(book.getBookId())
                 .bookImg(book.getBookImg())
@@ -46,6 +47,7 @@ public class BookRes {
                 .bookRating(book.getBookRating())
                 .bookCreatedAt(book.getBookCreatedAt())
                 .bookUpdatedAt(book.getBookUpdatedAt())
+                .libraryCodes(libraryCodes)
                 .build();
     }
 }
