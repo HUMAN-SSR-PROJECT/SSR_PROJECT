@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.springframework.web.multipart.MultipartFile;
 
 @Getter
 @Setter
@@ -17,7 +18,7 @@ import lombok.ToString;
 @Builder
 public class MypageUpdateReq {
   private String nickname;
-  private String imgUrl;
+  private MultipartFile imgUrl;
   private String intro;
   private String addr;
 
@@ -25,7 +26,6 @@ public class MypageUpdateReq {
     return Members.builder()
             .id(memberId)
             .nickname(this.nickname)
-            .imgUrl(this.imgUrl)
             .intro(this.intro)
             .addr(this.addr)
             .build();

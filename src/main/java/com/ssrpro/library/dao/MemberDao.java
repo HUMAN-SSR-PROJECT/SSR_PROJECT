@@ -27,13 +27,6 @@ public class MemberDao {
                 members.getState(), members.getRule());
     }
 
-    // 로그인
-    public Optional<Members> login(LoginReq req) {
-        String sql = "SELECT * FROM MEMBERS WHERE MEMBER_EMAIL = ? AND MEMBER_PASSWORD = ?";
-        return jdbcTemplate.query(sql, memberRowMapper(), req.getEmail().trim(), req.getPassword())
-                .stream().findFirst();
-    }
-
     // 아이디 찾기
     public Optional<String> findId(FindIdReq req) {
         String sql = "SELECT MEMBER_EMAIL FROM MEMBERS WHERE MEMBER_NAME = ? AND MEMBER_BIRTH = ?";
@@ -70,21 +63,6 @@ public class MemberDao {
         return count != null && count > 0;
     }
 
-    /**
-     * 이름, 이메일, 생년월일이 모두 일치하는 회원이 있는지 확인 (가입 여부 확인)
-     */
-    public boolean existsByDetails(FindPwReq req) {
-        String sql = "SELECT COUNT(*) FROM MEMBERS " +
-                "WHERE MEMBER_NAME = ? AND MEMBER_EMAIL = ? AND MEMBER_BIRTH = ?";
-
-        // queryForObject를 사용해 숫자(Count)를 가져온 뒤 0보다 큰지 확인합니다.
-        Integer count = jdbcTemplate.queryForObject(sql, Integer.class,
-                req.getName().trim(),
-                req.getEmail().trim(),
-                req.getBirth());
-
-        return count != null && count > 0;
-    }
     // 마이페이지 수정
     public int updateMemberProfile(Members member) {
         String sql = "UPDATE MEMBERS SET MEMBER_NICKNAME = ?, MEMBER_IMGURL = ?, " +

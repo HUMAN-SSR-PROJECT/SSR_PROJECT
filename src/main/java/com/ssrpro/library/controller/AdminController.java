@@ -41,8 +41,8 @@ public class AdminController {
     model.addAttribute("totalBooks", bookService.countAllBooks());
 
     // 하단 최근 내역 (최신 가입 회원 및 최근 등록 도서 10개 씩 가져오기)
-    model.addAttribute("recentMembers", memberService.findRecentMembers(10));
-    model.addAttribute("recentBooks", bookService.getRecentBooks(10)); // getRecentBooks() 적용
+    model.addAttribute("recentMembers", memberService.getRecentMembers());
+    model.addAttribute("recentBooks", bookService.getRecentBooks()); // getRecentBooks() 적용
 
     return "admin/dashboard";
   }
@@ -64,9 +64,6 @@ public class AdminController {
     model.addAttribute("totalBooksCount", bookService.countAllBooks());
     model.addAttribute("totalGenres", bookService.countGenreTypes());
     model.addAttribute("mostCommonGenre", bookService.findMostCommonGenre());
-
-    model.addAttribute("globalStats", readBookService.getGlobalReadingStats());
-
     return "admin/book-manage";
   }
 
