@@ -5,11 +5,11 @@ import org.springframework.ui.Model;
 import com.ssrpro.library.dto.request.BookSearchReq;
 import com.ssrpro.library.dto.response.BookRes;
 import com.ssrpro.library.service.BookService;
+import com.ssrpro.library.support.RegionCatalog;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.List;
@@ -20,33 +20,47 @@ import java.util.List;
 public class BookController {
     private final BookService bookService;
 
-    // 도서 통합 검색 페이지
     @GetMapping("/search")
     public String searchPage(Model model) {
+        BookSearchReq searchReq = new BookSearchReq();
+        searchReq.setCity(11);
+        searchReq.setDistrict(0);
 
-        model.addAttribute("searchReq", new BookSearchReq());
+        model.addAttribute("searchReq", searchReq);
+        model.addAttribute("searched", false);
+        model.addAttribute("activeNav", "book-search");
+        model.addAttribute("mainClass", "site-main--fluid");
+        addRegionAttributes(model, searchReq);
         return "book/search";
     }
-    // 도서 검색 실행
+
     @GetMapping("/search/execute")
     public String executeSearch(@ModelAttribute("searchReq") BookSearchReq req, Model model) {
-        // 서비스에서 검색 결과 리스트를 가져옴
+        if (req.getCity() <= 0) {
+            req.setCity(11);
+        }
+
         List<BookRes> searchResults = bookService.searchBooks(req);
 
-        // 검색 결과 리스트
         model.addAttribute("searchResults", searchResults);
-
-        // 검색 결과 개수
         model.addAttribute("count", searchResults.size());
-
-        // 결과 없을 때
         model.addAttribute("isEmpty", searchResults.isEmpty());
-
-        // 키워드, 지역 정보 유지
         model.addAttribute("keyword", req.getKeyword());
-        model.addAttribute("city", req.getCity());
-        model.addAttribute("district", req.getDistrict());
+        model.addAttribute("searched", true);
+        model.addAttribute("searchReq", req);
+        model.addAttribute("activeNav", "book-search");
+        model.addAttribute("mainClass", "site-main--fluid");
+        model.addAttribute("locationLabel", RegionCatalog.locationLabel(req.getCity(), req.getDistrict()));
+        addRegionAttributes(model, req);
 
         return "book/search";
+    }
+
+    private void addRegionAttributes(Model model, BookSearchReq req) {
+        model.addAttribute("cities", RegionCatalog.cities());
+        model.addAttribute("districts", RegionCatalog.districts(req.getCity()));
+        model.addAttribute("districtsCatalogJson", RegionCatalog.districtsCatalogJson());
+        model.addAttribute("cityName", RegionCatalog.cityName(req.getCity()));
+        model.addAttribute("districtName", RegionCatalog.districtName(req.getCity(), req.getDistrict()));
     }
 }

@@ -71,7 +71,7 @@ public class MemberService {
         return memberDao.findPw(req);
     }
     // 마이페이지 수정
-    public boolean updateProfile(Long memberId, MypageUpdateReq req)  throws IOException {
+    public boolean updateProfile(Long memberId, MypageUpdateReq req) {
         String imageUrl = null;
 
         // 1. 이미지가 첨부되었는지 확인
@@ -81,12 +81,14 @@ public class MemberService {
             // 파일명 생성 (중복 방지를 위해 memberId와 타임스탬프 조합)
             String fileName = "profile/" + memberId + "_" + System.currentTimeMillis() + "_" + file.getOriginalFilename();
 
-            // 2. Firebase Storage에 파일 업로드
-            // .create(경로, 파일바이트, 파일타입)
-            storageBucket.create(fileName, file.getBytes(), file.getContentType());
+            try {
+                // 2. Firebase Storage에 파일 업로드
+                storageBucket.create(fileName, file.getBytes(), file.getContentType());
+            } catch (IOException e) {
+                throw new IllegalStateException("프로필 이미지 업로드에 실패했습니다.", e);
+            }
 
             // 3. 업로드된 파일의 공용 URL 생성 (고정 형식)
-            // Firebase Storage의 고정 URL 형식입니다.
             imageUrl = String.format("https://firebasestorage.googleapis.com/v0/b/%s/o/%s?alt=media",
                     bucketName, fileName.replace("/", "%2F"));
         }

@@ -71,15 +71,16 @@ public class BookService {
 
         for (Book book : books) {
             String isbn = book.getBookIsbn();
-            URI targetUrl = UriComponentsBuilder
+            UriComponentsBuilder urlBuilder = UriComponentsBuilder
                     .fromHttpUrl(DATA4LIB_LIB_BY_BOOK_URL)
                     .queryParam("authKey", libraryApiKey)
                     .queryParam("isbn", isbn)
                     .queryParam("region", regionCode)
-                    .queryParam("format", "json")
-                    .build()
-                    .encode()
-                    .toUri();
+                    .queryParam("format", "json");
+            if (req.getDistrict() > 0) {
+                urlBuilder.queryParam("dtl_region", String.valueOf(req.getDistrict()));
+            }
+            URI targetUrl = urlBuilder.build().encode().toUri();
 
             try {
                 Map<String, Object> response = restTemplate.getForObject(targetUrl, Map.class);

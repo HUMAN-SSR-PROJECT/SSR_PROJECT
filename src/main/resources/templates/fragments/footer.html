@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<footer class="site-footer" th:fragment="footer">
+    <div class="site-footer__inner">
+        <div class="site-footer__brand">
+            <div class="site-footer__logo">
+                <span class="site-footer__logo-text">DONGNAEBOOK</span>
+                <span class="site-footer__logo-emoji" aria-hidden="true">📖</span>
+            </div>
+            <p class="site-footer__desc">
+                내 주변 도서관과 당신의 서재를 연결하는 스마트 독서 플랫폼. 찾고, 기록하고, 성장합니다.
+            </p>
+        </div>
+        <div class="site-footer__nav-block">
+            <p class="site-footer__label">QUICK NAVIGATION</p>
+            <nav class="site-footer__nav" aria-label="푸터 바로가기">
+                <a th:href="@{/book/search}">SEARCH BOOKS</a>
+                <a th:href="@{/mylib/readbook}">PERSONAL LIBRARY</a>
+                <a th:href="@{/mylib/stats}">READING STATS</a>
+            </nav>
+        </div>
+        <div class="site-footer__quote-block">
+            <p class="site-footer__label">CRAFTED WITH</p>
+            <blockquote class="site-footer__quote">
+                "A book is a garden, an orchard, a storehouse, a party, a company by the way,
+                a counselor, a multitude of counselors."
+            </blockquote>
+        </div>
+    </div>
+    <p class="site-footer__copy">
+        © <span th:text="${T(java.time.Year).now().getValue()}">2026</span>
+        EDITORIAL DESIGN — STATISTICS POWERED BY DONGNAEBOOK
+    </p>
+</footer>
+</body>
+</html>

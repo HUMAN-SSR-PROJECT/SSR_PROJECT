@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}"
+      lang="ko">
+<head>
+    <title>도서 검색</title>
+    <th:block layout:fragment="extra-head">
+        <link rel="stylesheet" th:href="@{/css/book-search.css}">
+    </th:block>
+</head>
+<body>
+<div layout:fragment="content" class="book-search">
+    <section class="book-search__panel">
+        <div class="book-search__panel-inner">
+            <p class="book-search__eyebrow">SEARCH INTEGRATED LIBRARY</p>
+            <div class="book-search__title-row">
+                <h1 class="book-search__title">도서 통합 검색</h1>
+                <p class="book-search__tagline">어디에나 있고, 어디에도 없는 책</p>
+            </div>
+
+            <form class="book-search__form"
+                  id="book-search-form"
+                  th:action="@{/book/search/execute}"
+                  method="get"
+                  data-book-search-form>
+                <input type="hidden" name="city" id="search-city" th:value="${searchReq.city}">
+                <input type="hidden" name="district" id="search-district" th:value="${searchReq.district}">
+                <span class="book-search__form-icon" aria-hidden="true">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.2"/>
+                        <path d="M10.5 10.5L13.5 13.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+                    </svg>
+                </span>
+                <div class="book-search__form-input-wrap">
+                    <input class="book-search__form-input"
+                           type="search"
+                           name="keyword"
+                           id="search-keyword"
+                           placeholder="책 제목, 저자, 장르를 입력하세요..."
+                           th:value="${keyword}"
+                           autocomplete="off">
+                    <button type="button" class="book-search__form-clear" data-search-clear aria-label="검색어 지우기">
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M3 3L11 11M11 3L3 11" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+                        </svg>
+                    </button>
+                </div>
+                <button type="submit" class="book-search__form-submit">SEARCH</button>
+            </form>
+
+            <div class="book-search__filters">
+                <div class="book-search__filter-row">
+                    <span class="book-search__filter-label">시·도</span>
+                    <div class="book-search__filter-scroll" data-filter-scroll>
+                        <button type="button" class="book-search__filter-nav" data-scroll-prev aria-label="시·도 이전">
+                            <svg width="8" height="12" viewBox="0 0 8 12" fill="none" aria-hidden="true"><path d="M6 1L2 6L6 11" stroke="currentColor" stroke-width="1.2"/></svg>
+                        </button>
+                        <div class="book-search__filter-tabs" data-city-tabs>
+                            <button type="button"
+                                    class="book-search__filter-tab"
+                                    th:each="city : ${cities}"
+                                    th:text="${city.name}"
+                                    th:attr="data-city-code=${city.code}"
+                                    th:classappend="${city.code == searchReq.city} ? ' is-active' : ''">서울특별시</button>
+                        </div>
+                        <button type="button" class="book-search__filter-nav" data-scroll-next aria-label="시·도 다음">
+                            <svg width="8" height="12" viewBox="0 0 8 12" fill="none" aria-hidden="true"><path d="M2 1L6 6L2 11" stroke="currentColor" stroke-width="1.2"/></svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="book-search__filter-row book-search__filter-row--district" data-district-row>
+                    <span class="book-search__filter-label">구·군</span>
+                    <div class="book-search__filter-scroll" data-filter-scroll>
+                        <button type="button" class="book-search__filter-nav" data-scroll-prev aria-label="구·군 이전">
+                            <svg width="8" height="12" viewBox="0 0 8 12" fill="none" aria-hidden="true"><path d="M6 1L2 6L6 11" stroke="currentColor" stroke-width="1.2"/></svg>
+                        </button>
+                        <div class="book-search__filter-tabs" data-district-tabs>
+                            <button type="button"
+                                    class="book-search__filter-tab"
+                                    th:each="district : ${districts}"
+                                    th:text="${district.name}"
+                                    th:attr="data-district-code=${district.code}"
+                                    th:classappend="${district.code == searchReq.district} ? ' is-active' : ''">전체</button>
+                        </div>
+                        <button type="button" class="book-search__filter-nav" data-scroll-next aria-label="구·군 다음">
+                            <svg width="8" height="12" viewBox="0 0 8 12" fill="none" aria-hidden="true"><path d="M2 1L6 6L2 11" stroke="currentColor" stroke-width="1.2"/></svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="book-search__filter-row book-search__filter-row--location" th:if="${searched}">
+                    <span class="book-search__filter-label">위치</span>
+                    <div class="book-search__location">
+                        <strong th:text="${cityName}">서울특별시</strong>
+                        <span class="book-search__location-sep" th:if="${districtName != null and !districtName.isEmpty()}">›</span>
+                        <strong th:if="${districtName != null and !districtName.isEmpty()}" th:text="${districtName}">종로구</strong>
+                        <button type="button" class="book-search__location-clear" data-filter-clear>
+                            <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M2 2L8 8M8 2L2 8" stroke="currentColor" stroke-width="1"/>
+                            </svg>
+                            CLEAR
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="book-search__body">
+        <div th:if="${!searched}" class="book-search__intro">
+            <div class="book-search__intro-icon">
+                <div class="book-search__intro-icon-inner">
+                    <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="4" y="2" width="14" height="18" stroke="currentColor" stroke-width="1"/>
+                        <path d="M7 6H15M7 10H15M7 14H12" stroke="currentColor" stroke-width="1"/>
+                    </svg>
+                </div>
+            </div>
+            <p class="book-search__intro-label">SEARCH THE INTEGRATED COLLECTION</p>
+            <p class="book-search__intro-text">제목, 저자, 혹은 키워드로 주변 도서관 장서를 탐색하세요.</p>
+            <div class="book-search__suggest-divider"><span>추천 검색어</span></div>
+            <div class="book-search__suggest-tags">
+                <button type="button" class="book-search__suggest-tag" data-suggest-keyword="소설">소설</button>
+                <button type="button" class="book-search__suggest-tag" data-suggest-keyword="한강">한강</button>
+                <button type="button" class="book-search__suggest-tag" data-suggest-keyword="자기계발">자기계발</button>
+                <button type="button" class="book-search__suggest-tag" data-suggest-keyword="판타지">판타지</button>
+                <button type="button" class="book-search__suggest-tag" data-suggest-keyword="클린 코드">클린 코드</button>
+            </div>
+        </div>
+
+        <div th:if="${searched and isEmpty}" class="book-search__empty">
+            <div class="book-search__empty-icon" aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="9" cy="9" r="5.5" stroke="currentColor" stroke-width="1.2"/>
+                    <path d="M13.5 13.5L18 18" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+                </svg>
+            </div>
+            <h2 class="book-search__empty-title">검색 결과가 없습니다</h2>
+            <p class="book-search__empty-desc">
+                <em th:text="${keyword}">키워드</em>
+                <span th:if="${locationLabel != null and !locationLabel.isEmpty()}"
+                      th:text="${' - ' + locationLabel + ' 에 해당하는 도서를 찾을 수 없습니다.'}"> - 지역</span>
+                <span th:if="${locationLabel == null or locationLabel.isEmpty()}"
+                      th:text="${' 에 해당하는 도서를 찾을 수 없습니다.'}"> 에 해당하는 도서를 찾을 수 없습니다.</span>
+            </p>
+            <p class="book-search__empty-hint">철자를 확인하거나 다른 지역을 선택해 보세요.</p>
+        </div>
+
+        <div th:if="${searched and !isEmpty}">
+            <div class="book-search__summary">
+                <p class="book-search__summary-count">
+                    <span th:text="${count}">0</span> 건 검색됨 —
+                    <em th:text="|&quot;${keyword}&quot;|">"키워드"</em>
+                    <span th:if="${locationLabel != null and !locationLabel.isEmpty()}"
+                          th:text="${' · ' + locationLabel}"> · 지역</span>
+                </p>
+            </div>
+            <div class="book-search__list">
+                <a class="book-search__item"
+                   th:each="book, stat : ${searchResults}"
+                   th:href="@{/book/detail/{id}(id=${book.bookId})}">
+                    <div class="book-search__item-index" th:text="${stat.count < 10 ? '0' + stat.count : stat.count}">01</div>
+                    <div class="book-search__item-main">
+                        <div class="book-search__item-cover">
+                            <img th:if="${book.bookImg != null and !book.bookImg.isEmpty()}"
+                                 th:src="${book.bookImg}"
+                                 th:alt="${book.bookTitle}"
+                                 loading="lazy">
+                            <svg th:if="${book.bookImg == null or book.bookImg.isEmpty()}" width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <rect x="2" y="1" width="10" height="12" stroke="#bcbbb5" stroke-width="1"/>
+                            </svg>
+                        </div>
+                        <div class="book-search__item-info">
+                            <div class="book-search__item-title-row">
+                                <h3 class="book-search__item-title" th:text="${book.bookTitle}">제목</h3>
+                                <span class="book-search__item-genre" th:if="${book.bookGenre != null}" th:text="${book.bookGenre}">장르</span>
+                            </div>
+                            <p class="book-search__item-meta">
+                                <span th:text="${book.bookWriter}">저자</span>
+                                <span th:if="${book.bookCompany != null}"> | </span>
+                                <span th:text="${book.bookCompany}">출판사</span>
+                                <span th:if="${book.bookYear != null}"> | </span>
+                                <span th:if="${book.bookYear != null}" th:text="${book.bookYear.year}">연도</span>
+                            </p>
+                            <p class="book-search__item-isbn">
+                                ISBN <span th:text="${book.bookIsbn}">ISBN</span>
+                                <span th:if="${locationLabel != null and !locationLabel.isEmpty()}" th:text="${' ' + locationLabel}"></span>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="book-search__item-status">
+                        <p class="book-search__badge book-search__badge--available"
+                           th:if="${book.libraryCodes != null and !book.libraryCodes.isEmpty()}">대출 가능</p>
+                        <p class="book-search__badge book-search__badge--unavailable"
+                           th:if="${book.libraryCodes == null or book.libraryCodes.isEmpty()}">대출 불가</p>
+                        <p class="book-search__holdings"
+                           th:if="${book.libraryCodes != null and !book.libraryCodes.isEmpty()}"
+                           th:text="${book.libraryCodes.size() + '개 도서관 소장'}">소장</p>
+                        <p class="book-search__holdings"
+                           th:if="${book.libraryCodes == null or book.libraryCodes.isEmpty()}">0개 도서관 소장</p>
+                    </div>
+                </a>
+            </div>
+            <p class="book-search__footnote">* 도서를 클릭하면 도서관별 대출 현황을 확인할 수 있습니다.</p>
+        </div>
+    </section>
+
+</div>
+
+<th:block layout:fragment="extra-scripts">
+    <script type="application/json" id="region-districts-data" th:utext="${districtsCatalogJson}">{}</script>
+    <script th:src="@{/js/book-search.js}"></script>
+</th:block>
+</body>
+</html>

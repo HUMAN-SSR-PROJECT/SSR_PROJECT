@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="https://www.thymeleaf.org/extras/spring-security">
+<body>
+<header class="site-header" th:fragment="header">
+    <div class="site-header__inner">
+        <a class="brand" th:href="@{/}" aria-label="동네북 홈">
+            <span class="brand__mark">
+                <img th:src="@{/images/icon-book.svg}" alt="" width="14" height="14">
+            </span>
+            <span class="brand__text">
+                <span class="brand__title">DONGNAEBOOK</span>
+                <span class="brand__sub">동네북</span>
+            </span>
+        </a>
+
+        <nav class="site-nav" aria-label="주 메뉴">
+            <a class="site-nav__link"
+               th:href="@{/book/search}"
+               th:classappend="${activeNav == 'book-search'} ? ' is-active' : ''">도서 검색</a>
+            <a class="site-nav__link" th:href="@{/mylib/readbook}" sec:authorize="isAuthenticated()">내 서재</a>
+            <a class="site-nav__link" th:href="@{/mylib/stats}" sec:authorize="isAuthenticated()">독서 통계</a>
+            <a class="site-nav__link" th:href="@{/member/login}" sec:authorize="!isAuthenticated()">내 서재</a>
+            <a class="site-nav__link" th:href="@{/member/login}" sec:authorize="!isAuthenticated()">독서 통계</a>
+        </nav>
+
+        <a class="btn-signin" sec:authorize="!isAuthenticated()" th:href="@{/member/login}">SIGN IN</a>
+
+        <div class="profile" sec:authorize="isAuthenticated()" data-profile>
+            <button type="button"
+                    class="profile__trigger"
+                    data-profile-toggle
+                    aria-expanded="false"
+                    aria-controls="profile-menu"
+                    aria-haspopup="true">
+                <span class="profile__avatar"
+                      th:text="${#strings.isEmpty(principal.nickname) ? '?' : #strings.substring(principal.nickname, 0, 1)}">김</span>
+                <span class="profile__name" sec:authentication="principal.nickname">회원</span>
+                <span class="profile__chevron" aria-hidden="true">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </span>
+            </button>
+            <div th:replace="~{fragments/profile-menu :: menu}"></div>
+        </div>
+    </div>
+</header>
+</body>
+</html>
