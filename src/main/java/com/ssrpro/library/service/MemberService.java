@@ -24,6 +24,13 @@ public class MemberService {
     @Value("${firebase.storage.bucket}")
     private String bucketName;
 
+    public boolean existsByEmail(String email) {
+        if (email == null || email.isBlank()) {
+            return false;
+        }
+        return memberDao.existsByEmail(email.trim());
+    }
+
     // 회원가입
     public boolean join(SignUpReq req) {
         // 1. 이메일 중복 체크 (null 및 trim 처리 포함)
