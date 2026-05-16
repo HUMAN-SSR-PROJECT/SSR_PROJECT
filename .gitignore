@@ -38,3 +38,4 @@ out/
 .env
 /src/main/resources/templates/test/
 /src/main/resources/serviceAccountKey.json
+.cursor

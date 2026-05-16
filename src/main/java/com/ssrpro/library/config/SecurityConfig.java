@@ -21,7 +21,7 @@ public class SecurityConfig {
                         // /admin으로 시작하면 관리자만
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         // 마이페이지는 로그인만 하면 ok
-                        .requestMatchers("/member/mypage").authenticated()
+                        .requestMatchers("/member/mypage", "/mylib/**").authenticated()
                         // 그 외(메인, 도서검색 등)는 비로그인도 가능
                         .anyRequest().permitAll()
                 )
@@ -31,6 +31,8 @@ public class SecurityConfig {
                         .loginPage("/member/login")
                         // 로그인 성공시 이동할 페이지
                         .defaultSuccessUrl("/", true)
+                        .usernameParameter("email")
+                        .passwordParameter("password")
                 )
                 // 3. 로그아웃 설정
                 .logout(logout -> logout
