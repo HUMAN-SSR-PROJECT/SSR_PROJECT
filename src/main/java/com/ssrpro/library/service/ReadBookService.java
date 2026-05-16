@@ -19,7 +19,6 @@ import lombok.RequiredArgsConstructor;
 public class ReadBookService {
   private final ReadBookDao readBookDao;
 
-  // 아래 memberId는 전부 security에서 꺼내올 예정
   // 읽을 책 추가 / 삭제
   @Transactional
   public boolean addToReadSoon(Long memberId, Long bookId) {
@@ -60,7 +59,7 @@ public class ReadBookService {
 
   // 내 서재 - 읽는 중 → 완독, 완독 상세 수정
   @Transactional
-  public boolean changeToReaded(ReadBookReq readBookReq, Long memberId) {
+  public boolean changeToReaded(Long memberId, ReadBookReq readBookReq) {
     if (readBookDao.isReadBookDuplicate(memberId, readBookReq.getBookId()) == 1) {
       throw new IllegalStateException("존재하지 않는 정보입니다.");
     }
