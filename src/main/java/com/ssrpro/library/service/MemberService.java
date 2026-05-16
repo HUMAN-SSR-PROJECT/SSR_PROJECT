@@ -1,11 +1,16 @@
 package com.ssrpro.library.service;
 
+import com.google.cloud.storage.Bucket;
 import com.ssrpro.library.dao.MemberDao;
 import com.ssrpro.library.dto.entity.Members;
 import com.ssrpro.library.dto.request.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -13,6 +18,11 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class MemberService {
     private final MemberDao memberDao;
+    private final PasswordEncoder passwordEncoder;
+    private final Bucket storageBucket;
+
+    @Value("${firebase.storage.bucket}")
+    private String bucketName;
 
     // 회원가입
     public boolean join(SignUpReq req) {
@@ -27,6 +37,7 @@ public class MemberService {
         }
 
         // 3. 입력값 정제 (이메일은 위에서 null 체크 완료)
+        req.setPassword(passwordEncoder.encode(req.getPassword()));
         req.setEmail(req.getEmail().trim());
         if (req.getName() != null) req.setName(req.getName().trim());
         if (req.getNickname() != null) req.setNickname(req.getNickname().trim());
@@ -36,17 +47,6 @@ public class MemberService {
         int result = memberDao.join(member);
 
         return result > 0;
-    }
-
-    // 로그인
-    public Optional<Members> login(LoginReq req) {
-        if (req.getEmail() == null || req.getPassword() == null) {
-            return Optional.empty();
-        }
-        req.setEmail(req.getEmail().trim());
-        // Dao에서 이미 이메일과 비밀번호가 맞는 유저를 찾아오므로,
-        // 여기서 바로 객체를 반환하면 컨트롤러에서 findByEmail을 다시 부를 필요가 없습니다.
-        return memberDao.login(req);
     }
 
     // 아이디 찾기
@@ -70,66 +70,64 @@ public class MemberService {
 
         return memberDao.findPw(req);
     }
-    /**
-     * 비밀번호 찾기 전 단계: 회원 정보 일치 여부 확인
-     */
-    public boolean checkMemberExists(FindPwReq req) {
-        // 필수 데이터 누락 시 즉시 false 반환
-        if (req.getName() == null || req.getEmail() == null || req.getBirth() == null) {
-            return false;
+    // 마이페이지 수정
+    public boolean updateProfile(Long memberId, MypageUpdateReq req)  throws IOException {
+        String imageUrl = null;
+
+        // 1. 이미지가 첨부되었는지 확인
+        if (req.getImgUrl() != null && !req.getImgUrl().isEmpty()) {
+            MultipartFile file = req.getImgUrl();
+
+            // 파일명 생성 (중복 방지를 위해 memberId와 타임스탬프 조합)
+            String fileName = "profile/" + memberId + "_" + System.currentTimeMillis() + "_" + file.getOriginalFilename();
+
+            // 2. Firebase Storage에 파일 업로드
+            // .create(경로, 파일바이트, 파일타입)
+            storageBucket.create(fileName, file.getBytes(), file.getContentType());
+
+            // 3. 업로드된 파일의 공용 URL 생성 (고정 형식)
+            // Firebase Storage의 고정 URL 형식입니다.
+            imageUrl = String.format("https://firebasestorage.googleapis.com/v0/b/%s/o/%s?alt=media",
+                    bucketName, fileName.replace("/", "%2F"));
         }
 
-        // Dao를 통해 DB에 일치하는 정보가 있는지 확인
-        return memberDao.existsByDetails(req);
-    }
-    // 마이페이지 수정
-    public boolean updateProfile(Long memberId, MypageUpdateReq req) {
-        // 1. DTO를 엔티티로 변환 (toEntity 활용)
+        // 4. 엔티티 변환 (imageUrl 포함)
         Members member = req.toEntity(memberId);
+        if (imageUrl != null) {
+            member.setImgUrl(imageUrl); // 엔티티에 사진 URL 세팅
+        }
 
-        // 2. DB 업데이트 실행
+        // 5. DB 업데이트
         int result = memberDao.updateMemberProfile(member);
-
         return result > 0;
     }
+
     // 마이페이지 조회를 위한 회원 정보 획득
-    public Optional<Members> getMemberById(Long id) {
-        if (id == null) return Optional.empty();
-        return memberDao.findById(id);
+    public Members getMemberById(Long id) {
+        return memberDao.findById(id).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원 입니다."));
     }
-    // 관리자 판별
-    public boolean isAdmin(Members member) {
-        // null 체크와 대소문자 구분 없는 비교로 안전성 강화
-        return member != null && "ADMIN".equalsIgnoreCase(member.getRule());
-    }
+
    // 관리자용 회원 목록 조회
     public List<Members> getAllMembers(String keyword) {
         // 키워드가 null이면 빈 문자열로 처리하여 전체 조회가 되도록 함
         return memberDao.findAll(keyword == null ? "" : keyword);
     }
+
     // 관리자 회원 상태 변경
     public boolean changeMemberState(Long id, String state) {
         return memberDao.updateMemberState(id, state) > 0;
     }
-    /**
-     * 회원 삭제 (관리자 전용)
-     */
+
+    // 관리자 회원 삭제
     public boolean removeMember(Long id) {
         return memberDao.deleteMember(id) > 0;
     }
-    /**
-     * 이메일로 회원 정보 조회 (세션 최신화 및 상세 로직용)
-     */
-    public Optional<Members> getMemberByEmail(String email) {
-        if (email == null || email.isBlank()) {
-            return Optional.empty();
-        }
-        return memberDao.findByEmail(email.trim());
-    }
+
     // 대시보드용 총 회원 수 획득
     public int getTotalCount() {
         return memberDao.getTotalMemberCount();
     }
+
     // 대시보드용 최근 가입 회원 10명 목록 획득
     public List<Members> getRecentMembers() {
         return memberDao.findRecentMembers();

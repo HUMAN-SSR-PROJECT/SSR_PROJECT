@@ -39,3 +39,6 @@ out/
 /src/main/resources/templates/test/
 /src/main/resources/serviceAccountKey.json
 .cursor
+
+### Local instructions (not committed) ###
+cursor/

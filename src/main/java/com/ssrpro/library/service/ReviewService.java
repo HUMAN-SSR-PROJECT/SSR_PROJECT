@@ -96,37 +96,6 @@ public class ReviewService {
         .collect(Collectors.toList());
   }
 
-  // 전체 리뷰 수 조회
-  public int countByBookId(Long bookId) {
-    return reviewDao.countByBookId(bookId);
-  }
-
-  // 별점별 리뷰 수 조회
-  public int countByBookIdAndRating(Long bookId, int rating) {
-    return reviewDao.countByBookIdAndRating(bookId, rating);
-  }
-
-  // 별점별 퍼센트 계산 (1~5점)
-  // DAO에서 COUNT로 가져온 값을 퍼센트로 변환
-  public Map<Integer, Double> getRatingPercent(Long bookId) {
-
-    // 전체 리뷰 수
-    int total = reviewDao.countByBookId(bookId);
-
-    Map<Integer, Double> ratingPercent = new LinkedHashMap<>();
-
-    for (int i = 1; i <= 5; i++) {
-      // 별점별 리뷰 수
-      int count = reviewDao.countByBookIdAndRating(bookId, i);
-      // 퍼센트 계산 (전체 0이면 0% 처리 - 0으로 나누기 방지)
-      double percent = total > 0 ? (double) count / total * 100 : 0;
-      // 소수점 없이 반올림 (예: 62%)
-      ratingPercent.put(i, (double) Math.round(percent));
-    }
-
-    return ratingPercent;
-  }
-
   // 좋아요 토글 (추가/취소 자동 전환)
   public int toggleLike(Long reviewId, Long memberId) {
 
