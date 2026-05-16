@@ -5,6 +5,7 @@ import com.ssrpro.library.dto.entity.Review;
 import lombok.*;
 
 @Getter
+@Setter
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor

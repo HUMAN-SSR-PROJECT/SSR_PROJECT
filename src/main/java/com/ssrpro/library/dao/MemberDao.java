@@ -22,8 +22,8 @@ public class MemberDao {
                       "MEMBER_NICKNAME, MEMBER_BIRTH, MEMBER_STATE, MEMBER_RULE) " +
                       "VALUES (MEMBER_SEQ.NEXTVAL, ?, ?, ?, ?, ?, ?, ?)";
         return jdbcTemplate.update(sql,
-                members.getEmail().trim(), members.getPassword(), members.getName().trim(),
-                members.getNickname().trim(), members.getBirth(),
+                trimToEmpty(members.getEmail()), members.getPassword(), trimToEmpty(members.getName()),
+                trimToEmpty(members.getNickname()), members.getBirth(),
                 members.getState(), members.getRule());
     }
 
@@ -54,7 +54,14 @@ public class MemberDao {
                 .birth(rs.getDate("MEMBER_BIRTH") != null ? rs.getDate("MEMBER_BIRTH").toLocalDate() : null)
                 .state(rs.getString("MEMBER_STATE"))
                 .rule(rs.getString("MEMBER_RULE")) // ADMIN 여부 판별의 핵심 필드
+                .imgUrl(rs.getString("MEMBER_IMGURL"))
+                .intro(rs.getString("MEMBER_INTRO"))
+                .addr(rs.getString("MEMBER_ADDR"))
                 .build();
+    }
+
+    private static String trimToEmpty(String value) {
+        return value == null ? "" : value.trim();
     }
     // 이메일 중복 체크
     public boolean existsByEmail(String email) {
@@ -133,7 +140,7 @@ public class MemberDao {
     // 최근 가입 회원 (10명)
     public List<Members> findRecentMembers() {
         // Oracle 기준: 가입일 내림차순 정렬 후 상위 10개 행 선택
-        String sql = "SELECT * FROM MEMBERS ORDER BY CREATED_AT DESC FETCH FIRST 10 ROWS ONLY";
+        String sql = "SELECT * FROM MEMBERS ORDER BY MEMBER_CREATED_AT DESC FETCH FIRST 10 ROWS ONLY";
 
         // 이전에 만들어둔 memberRowMapper를 그대로 재사용합니다.
         return jdbcTemplate.query(sql, memberRowMapper());

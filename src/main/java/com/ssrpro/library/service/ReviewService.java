@@ -90,7 +90,7 @@ public class ReviewService {
             // 좋아요 수 - COUNT 쿼리로 조회
             .likeCount((long) reviewDao.countLikeByReviewId(review.getReviewId()))
             // 로그인한 회원의 좋아요 여부
-            .isLiked(reviewDao.existsLike(review.getReviewId(), memberId))
+            .isLiked(memberId != null && reviewDao.existsLike(review.getReviewId(), memberId))
             .build())
         // stream()으로 가공된 ReviewRes 객체들을 List로 수집하여 반환
         .collect(Collectors.toList());

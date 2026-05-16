@@ -69,6 +69,12 @@ public class BookDao {
             return Optional.empty();
         }
     }
+    public boolean existsByIsbn(String isbn) {
+        String sql = "SELECT COUNT(*) FROM BOOK WHERE BOOK_ISBN = ?";
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, isbn.trim());
+        return count != null && count > 0;
+    }
+
     // 도서 저장  INSERT INTO
     public boolean save(Book book) {
         String sql = "INSERT INTO BOOK (" +

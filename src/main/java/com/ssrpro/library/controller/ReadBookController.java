@@ -83,7 +83,7 @@ public class ReadBookController {
     req.setBookId(bookId);
 
     readBookService.changeToReaded(memberId, req);
-    return "redirect:/mylib/readbook?bookId=" + bookId;
+    return "redirect:/mylib/readbook";
   }
   
   // 독서 분석 리포트 - 통계 계산용 리스트

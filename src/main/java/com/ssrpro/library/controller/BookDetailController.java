@@ -24,33 +24,51 @@ public class BookDetailController {
     private final LibraryService libraryService;
     private final ReadBookService readBookService;
 
-    // 상세 페이지 진입
+    /**
+     * 검색 결과에서 책 클릭 시 — libraryCodes는 POST body로 받고, URL에는 bookId만 남김.
+     */
+    @PostMapping("/{bookId}")
+    public String bookDetailFromSearch(
+            @PathVariable Long bookId,
+            @ModelAttribute("bookDetailReq") BookDetailReq req,
+            RedirectAttributes redirectAttributes) {
+        req.setBookId(bookId);
+        redirectAttributes.addFlashAttribute("bookDetailReq", req);
+        return "redirect:/book/detail/" + bookId;
+    }
+
+    /** 상세 직접 접속 (도서관 코드 없으면 library 목록만 비음) */
     @GetMapping("/{bookId}")
-    public String bookDetail(Model model, @PathVariable Long bookId, @ModelAttribute BookDetailReq req, @AuthenticationPrincipal CustomUser customUser){
-        // 시큐리티 memberId 가져오기 try-catch() 사용 그리고 없을경우 검색 페이지 리턴
-        // 1. 로그인 체크 (혹시 모르니)
-        if (customUser == null) {
-            return "redirect:/member/login";
-        }
+    public String bookDetail(
+            Model model,
+            @PathVariable Long bookId,
+            @ModelAttribute("bookDetailReq") BookDetailReq req,
+            @AuthenticationPrincipal CustomUser customUser) {
+        return renderBookDetail(model, bookId, req, customUser);
+    }
 
-        // 2. ID 꺼내기
-        Long memberId = customUser.getMemberId();
+    private String renderBookDetail(
+            Model model,
+            Long bookId,
+            BookDetailReq req,
+            CustomUser customUser) {
+        Long memberId = customUser != null ? customUser.getMemberId() : null;
 
-        try{
+        try {
             model.addAttribute("book", bookService.getBookDetail(bookId));
-        }catch(Exception e){
+        } catch (Exception e) {
             model.addAttribute("bookError", e.getMessage());
         }
 
-        try{
+        try {
             model.addAttribute("review", reviewService.findByBookId(bookId, memberId));
-        }catch (Exception e){
+        } catch (Exception e) {
             model.addAttribute("reviewError", e.getMessage());
         }
 
-        try{
+        try {
             model.addAttribute("library", libraryService.findByLibraryCode(req));
-        }catch(Exception e){
+        } catch (Exception e) {
             model.addAttribute("libraryError", e.getMessage());
         }
 
@@ -72,12 +90,12 @@ public class BookDetailController {
             boolean rst = readBookService.addToReading(memberId, bookId);
             if(!rst){
                 redirectAttributes.addFlashAttribute("readBookError", "입력중 에러 발생");
-                return "redirect:book/detail" + bookId;
+                return "redirect:/book/detail/" + bookId;
             }
-            return "redirect:book/detail" + bookId;
+            return "redirect:/book/detail/" + bookId;
         }catch(Exception e){
             redirectAttributes.addFlashAttribute("error", e.getMessage());
-            return "redirect:book/detail" + bookId;
+            return "redirect:/book/detail/" + bookId;
         }
     }
     // 읽을책 추가 - 즐겨찾기
@@ -96,12 +114,12 @@ public class BookDetailController {
             boolean rst = readBookService.addToReadSoon(memberId, bookId);
             if(!rst){
                 redirectAttributes.addFlashAttribute("readBookError", "입력중 에러 발생");
-                return "redirect:book/detail" + bookId;
+                return "redirect:/book/detail/" + bookId;
             }
-            return "redirect:book/detail" + bookId;
+            return "redirect:/book/detail/" + bookId;
         }catch(Exception e){
             redirectAttributes.addFlashAttribute("error", e.getMessage());
-            return "redirect:book/detail" + bookId;
+            return "redirect:/book/detail/" + bookId;
         }
     }
 
@@ -110,6 +128,9 @@ public class BookDetailController {
     public String insert(@ModelAttribute ReviewReq req,
                          @AuthenticationPrincipal CustomUser customUser,
                          RedirectAttributes rttr) {
+        if (customUser == null) {
+            return "redirect:/member/login";
+        }
 
         int result = reviewService.insert(req, customUser.getMemberId());
 
@@ -128,6 +149,9 @@ public class BookDetailController {
     public String update(@ModelAttribute ReviewReq req,
                          @AuthenticationPrincipal CustomUser customUser,
                          RedirectAttributes rttr) {
+        if (customUser == null) {
+            return "redirect:/member/login";
+        }
 
         int result = reviewService.update(req, customUser.getMemberId());
 
@@ -147,6 +171,9 @@ public class BookDetailController {
                          @RequestParam Long bookId,
                          @AuthenticationPrincipal CustomUser customUser,
                          RedirectAttributes rttr) {
+        if (customUser == null) {
+            return "redirect:/member/login";
+        }
 
         int result = reviewService.delete(reviewId, customUser.getMemberId());
 
