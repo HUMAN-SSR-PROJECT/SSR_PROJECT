@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!-- 내 서재 · 읽는 중 -->
+<div class="empty-state empty-state--library"
+     th:fragment="mylib-reading"
+     role="status">
+    <div class="empty-state__icon" aria-hidden="true">
+        <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4 3H16V17H4V3Z" stroke="currentColor" stroke-width="1"/>
+            <path d="M7 6H13M7 9H13M7 12H11" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+        </svg>
+    </div>
+    <p class="empty-state__eyebrow">NO BOOKS YET</p>
+    <p class="empty-state__message">현재 읽고 있는 책이 없습니다.</p>
+</div>
+
+<!-- 내 서재 · 읽을 책 -->
+<div class="empty-state empty-state--library"
+     th:fragment="mylib-wishlist"
+     role="status">
+    <div class="empty-state__icon" aria-hidden="true">
+        <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4 3H16V17H4V3Z" stroke="currentColor" stroke-width="1"/>
+            <path d="M10 6V11M7.5 8.5H12.5" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+        </svg>
+    </div>
+    <p class="empty-state__eyebrow">NO BOOKS YET</p>
+    <p class="empty-state__message">읽고 싶은 책을 추가해 보세요.</p>
+</div>
+
+<!-- 내 서재 · 완독 -->
+<div class="empty-state empty-state--library"
+     th:fragment="mylib-completed"
+     role="status">
+    <div class="empty-state__icon" aria-hidden="true">
+        <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4 3H16V17H4V3Z" stroke="currentColor" stroke-width="1"/>
+            <path d="M7 12L9 14L13 10" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+    </div>
+    <p class="empty-state__eyebrow">NO BOOKS YET</p>
+    <p class="empty-state__message">완독한 책이 없습니다.</p>
+</div>
+
+<!-- 도서 상세 · 리뷰 탭 -->
+<div class="empty-state empty-state--reviews"
+     th:fragment="book-detail-reviews"
+     role="status">
+    <div class="empty-state__icon" aria-hidden="true">
+        <svg viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M5 4H17V18H5V4Z" stroke="currentColor" stroke-width="1"/>
+            <path d="M8 8H14M8 11H14M8 14H12" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+        </svg>
+    </div>
+    <p class="empty-state__eyebrow">NO REVIEWS YET</p>
+    <p class="empty-state__message">
+        아직 작성된 리뷰가 없습니다.<br>
+        첫 번째 리뷰를 남겨보세요.
+    </p>
+</div>
+
+<!-- 독서 통계 -->
+<div class="empty-state empty-state--stats"
+     th:fragment="stats"
+     role="status">
+    <div class="empty-state__chart" aria-hidden="true">
+        <span></span><span></span><span></span><span></span><span></span>
+    </div>
+    <p class="empty-state__eyebrow">NO DATA YET</p>
+    <p class="empty-state__message">아직 독서 기록이 없습니다.</p>
+    <p class="empty-state__hint">
+        내 서재에서 책을 완독하면<br>
+        독서 통계가 이곳에 표시됩니다.
+    </p>
+</div>
+
+<!-- 관리자 대시보드 · 최근 가입 회원 (제목은 admin-panel__head) Figma 1:5616 -->
+<div class="admin-panel-empty"
+     th:fragment="admin-dashboard-members"
+     role="status">
+    <div class="admin-panel-empty__cols">
+        <span>EMAIL</span>
+        <span>NICKNAME</span>
+        <span>JOINED</span>
+    </div>
+    <div class="admin-panel-empty__body">
+        <svg class="admin-panel-empty__icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <circle cx="12" cy="8" r="3.5" stroke="currentColor" stroke-width="1"/>
+            <path d="M5 20C5 16.5 7.5 15 12 15C16.5 15 19 16.5 19 20" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+        </svg>
+        <p class="admin-panel-empty__message">가입한 회원이 없습니다.</p>
+    </div>
+</div>
+
+<!-- 관리자 대시보드 · 최근 등록 도서 Figma 1:5616 -->
+<div class="admin-panel-empty admin-panel-empty--books"
+     th:fragment="admin-dashboard-books"
+     role="status">
+    <div class="admin-panel-empty__body">
+        <svg class="admin-panel-empty__icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M6 5H18V19H6V5Z" stroke="currentColor" stroke-width="1"/>
+            <path d="M9 9H15M9 12H15" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+        </svg>
+        <p class="admin-panel-empty__message">등록된 도서가 없습니다.</p>
+    </div>
+</div>
+
+<!-- 관리자 회원 목록 · 데이터 없음 -->
+<div class="empty-state empty-state--admin"
+     th:fragment="admin-members-list"
+     role="status">
+    <div class="empty-state__icon" aria-hidden="true">
+        <svg viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="9" cy="6" r="3" stroke="currentColor" stroke-width="1"/>
+            <path d="M3 16C3 12.5 5.5 11 9 11C12.5 11 15 12.5 15 16" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+        </svg>
+    </div>
+    <p class="empty-state__eyebrow">NO MEMBERS</p>
+    <p class="empty-state__message">등록된 회원이 없습니다.</p>
+</div>
+
+<!-- 관리자 회원 목록 · 검색 결과 없음 -->
+<div class="empty-state empty-state--admin"
+     th:fragment="admin-members-search"
+     role="status">
+    <div class="empty-state__icon" aria-hidden="true">
+        <svg viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="9" cy="6" r="3" stroke="currentColor" stroke-width="1"/>
+            <path d="M3 16C3 12.5 5.5 11 9 11C12.5 11 15 12.5 15 16" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+        </svg>
+    </div>
+    <p class="empty-state__eyebrow">NO RESULTS</p>
+    <p class="empty-state__message" th:text="${keyword != null} ? |&quot;${keyword}&quot;에 해당하는 회원이 없습니다.| : '검색어에 해당하는 회원이 없습니다.'">
+        "검색어"에 해당하는 회원이 없습니다.
+    </p>
+</div>
+
+<!-- 관리자 도서 목록 · 데이터 없음 -->
+<div class="empty-state empty-state--admin"
+     th:fragment="admin-books-list"
+     role="status">
+    <div class="empty-state__icon" aria-hidden="true">
+        <svg viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4 2H14V16H4V2Z" stroke="currentColor" stroke-width="1"/>
+            <path d="M6 5H12M6 8H12" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+        </svg>
+    </div>
+    <p class="empty-state__eyebrow">NO BOOKS</p>
+    <p class="empty-state__message">등록된 도서가 없습니다.</p>
+</div>
+
+<!-- 관리자 도서 목록 · 검색 결과 없음 -->
+<div class="empty-state empty-state--admin"
+     th:fragment="admin-books-search"
+     role="status">
+    <div class="empty-state__icon" aria-hidden="true">
+        <svg viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4 2H14V16H4V2Z" stroke="currentColor" stroke-width="1"/>
+            <path d="M6 5H12M6 8H12" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+        </svg>
+    </div>
+    <p class="empty-state__eyebrow">NO RESULTS</p>
+    <p class="empty-state__message" th:text="${keyword != null} ? |&quot;${keyword}&quot;에 해당하는 도서가 없습니다.| : '검색어에 해당하는 도서가 없습니다.'">
+        "검색어"에 해당하는 도서가 없습니다.
+    </p>
+</div>
+
+<!-- 도서 상세 · 보유 도서관 없음 -->
+<div class="empty-state empty-state--library"
+     th:fragment="book-detail-libraries"
+     role="status">
+    <div class="empty-state__icon" aria-hidden="true">
+        <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M10 2L16 6V14L10 18L4 14V6L10 2Z" stroke="currentColor" stroke-width="1"/>
+            <circle cx="10" cy="10" r="2" stroke="currentColor" stroke-width="1"/>
+        </svg>
+    </div>
+    <p class="empty-state__eyebrow">NO LIBRARIES</p>
+    <p class="empty-state__message">이 지역에서 소장 중인 도서관이 없습니다.</p>
+    <p class="empty-state__hint">도서 검색에서 다른 시·도·구·군을 선택해 보세요.</p>
+</div>
+
+<!-- 도서 검색 · 검색 결과 없음 (Figma) -->
+<div class="empty-state empty-state--admin"
+     th:fragment="book-search-results"
+     role="status">
+    <div class="empty-state__icon" aria-hidden="true">
+        <svg viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4 2H14V16H4V2Z" stroke="currentColor" stroke-width="1"/>
+            <path d="M6 5H12M6 8H12" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+        </svg>
+    </div>
+    <p class="empty-state__eyebrow">NO RESULTS</p>
+    <p class="empty-state__message" th:text="${keyword != null} ? |&quot;${keyword}&quot;에 해당하는 도서가 없습니다.| : '검색어에 해당하는 도서가 없습니다.'">
+        "검색어"에 해당하는 도서가 없습니다.
+    </p>
+</div>
+
+</body>
+</html>

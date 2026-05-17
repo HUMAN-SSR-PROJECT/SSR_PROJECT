@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<aside class="admin-sidebar" th:fragment="sidebar(activeNav)" aria-label="관리자 메뉴">
+    <div class="admin-sidebar__brand">
+        <span class="admin-sidebar__logo" aria-hidden="true">
+            <svg viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M2 2H12V12H2V2Z" stroke="currentColor" stroke-width="1"/>
+                <path d="M4 5H10M4 7H10M4 9H8" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+            </svg>
+        </span>
+        <div class="admin-sidebar__brand-text">
+            <p class="admin-sidebar__title">ADMIN</p>
+            <p class="admin-sidebar__subtitle">관리자</p>
+        </div>
+    </div>
+    <nav class="admin-sidebar__nav">
+        <a class="admin-sidebar__link"
+           th:classappend="${activeNav == 'dashboard'} ? ' is-active' : ''"
+           th:href="@{/admin/dashboard}">
+            <span class="admin-sidebar__link-icon" aria-hidden="true">
+                <svg viewBox="0 0 14 14" fill="none"><path d="M2 2H6V6H2V2ZM8 2H12V6H8V2ZM2 8H6V12H2V8ZM8 8H12V12H8V8Z" stroke="currentColor" stroke-width="1"/></svg>
+            </span>
+            대시보드
+        </a>
+        <a class="admin-sidebar__link"
+           th:classappend="${activeNav == 'members'} ? ' is-active' : ''"
+           th:href="@{/admin/members}">
+            <span class="admin-sidebar__link-icon" aria-hidden="true">
+                <svg viewBox="0 0 14 14" fill="none"><circle cx="7" cy="5" r="2.5" stroke="currentColor"/><path d="M3 12C3 9.5 4.8 8 7 8C9.2 8 11 9.5 11 12" stroke="currentColor" stroke-linecap="round"/></svg>
+            </span>
+            회원 관리
+        </a>
+        <a class="admin-sidebar__link"
+           th:classappend="${activeNav == 'books'} ? ' is-active' : ''"
+           th:href="@{/admin/books}">
+            <span class="admin-sidebar__link-icon" aria-hidden="true">
+                <svg viewBox="0 0 14 14" fill="none"><path d="M3 2H11V12H3V2Z" stroke="currentColor"/><path d="M5 5H9M5 7H9" stroke="currentColor" stroke-linecap="round"/></svg>
+            </span>
+            도서 관리
+        </a>
+    </nav>
+    <div class="admin-sidebar__footer">
+        <span class="admin-sidebar__footer-icon" aria-hidden="true">
+            <svg viewBox="0 0 14 14" fill="none"><circle cx="7" cy="5" r="2.5" stroke="currentColor"/><path d="M3 12C3 9.5 4.8 8 7 8C9.2 8 11 9.5 11 12" stroke="currentColor" stroke-linecap="round"/></svg>
+        </span>
+        <span class="admin-sidebar__footer-label">ADMINISTRATOR</span>
+    </div>
+</aside>
+</body>
+</html>

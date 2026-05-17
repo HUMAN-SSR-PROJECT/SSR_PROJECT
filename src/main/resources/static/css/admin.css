@@ -1,0 +1,844 @@
+/* 관리자 공통 (Figma 1:4084, 1:4644, 1:5278, 1:4587) */
+
+.admin {
+    background: var(--surface-warm);
+    min-height: calc(100vh - var(--header-h));
+}
+
+.admin__shell {
+    display: flex;
+    align-items: stretch;
+    min-height: calc(100vh - var(--header-h));
+}
+
+.admin-sidebar {
+    flex: 0 0 200px;
+    width: 200px;
+    background: var(--footer);
+    color: rgba(255, 255, 255, 0.55);
+    display: flex;
+    flex-direction: column;
+    padding: 28px 0 0;
+}
+
+.admin-sidebar__brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 20px 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.admin-sidebar__logo {
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+}
+
+.admin-sidebar__logo svg {
+    width: 14px;
+    height: 14px;
+}
+
+.admin-sidebar__title {
+    margin: 0;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.2em;
+    color: #fff;
+}
+
+.admin-sidebar__subtitle {
+    margin: 2px 0 0;
+    font-size: 9px;
+    color: var(--muted);
+}
+
+.admin-sidebar__nav {
+    display: flex;
+    flex-direction: column;
+    padding: 16px 0;
+    flex: 1;
+}
+
+.admin-sidebar__link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 20px;
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.45);
+    border-left: 2px solid transparent;
+    transition: color 0.15s, background 0.15s;
+}
+
+.admin-sidebar__link:hover {
+    color: rgba(255, 255, 255, 0.85);
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.admin-sidebar__link.is-active {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.06);
+    border-left-color: #fff;
+}
+
+.admin-sidebar__link-icon {
+    display: grid;
+    place-items: center;
+    width: 14px;
+    height: 14px;
+}
+
+.admin-sidebar__link-icon svg {
+    width: 14px;
+    height: 14px;
+}
+
+.admin-sidebar__footer {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.admin-sidebar__footer-icon svg {
+    width: 14px;
+    height: 14px;
+    color: var(--muted);
+}
+
+.admin-sidebar__footer-label {
+    font-size: 8px;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    color: var(--muted);
+}
+
+.admin__main {
+    flex: 1;
+    min-width: 0;
+    padding: 40px 48px 56px;
+}
+
+.admin__head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 32px;
+}
+
+.admin__head-icon svg {
+    width: 20px;
+    height: 20px;
+    color: var(--ink);
+}
+
+.admin__title {
+    margin: 0;
+    font-size: 26px;
+    font-weight: 900;
+    letter-spacing: -0.02em;
+}
+
+.admin-stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+}
+
+.admin-stat-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.admin-stat-card__label {
+    margin: 0;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--muted-light);
+}
+
+.admin-stat-card__value-row {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+}
+
+.admin-stat-card__value {
+    margin: 0;
+    font-size: 32px;
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    line-height: 1;
+}
+
+.admin-stat-card__unit {
+    font-size: 11px;
+    color: var(--muted);
+}
+
+.admin-stat-card__value--text {
+    font-size: 22px;
+    letter-spacing: -0.02em;
+}
+
+.admin-panels {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.admin-panel {
+    background: var(--surface);
+    border: 1px solid var(--line);
+}
+
+.admin-panel__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--line-soft);
+}
+
+.admin-panel__title {
+    margin: 0;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+}
+
+.admin-panel__link {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+}
+
+.admin-panel__link:hover {
+    color: var(--ink);
+}
+
+/* 대시보드 패널 빈 상태 — Figma 1:5616 */
+.admin-panel-empty {
+    padding: 0 4px 8px;
+}
+
+.admin-panel-empty__cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+    padding: 0 0 4px;
+    margin-bottom: 4px;
+    border-bottom: 1px solid var(--line);
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    color: var(--muted-light);
+}
+
+.admin-panel-empty__cols span:nth-child(2) {
+    text-align: center;
+}
+
+.admin-panel-empty__cols span:nth-child(3) {
+    text-align: right;
+}
+
+.admin-panel-empty--books .admin-panel-empty__body {
+    min-height: 103px;
+}
+
+.admin-panel-empty__body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 103px;
+    padding: 28px 16px;
+}
+
+.admin-panel-empty__icon {
+    display: block;
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+    color: var(--muted-light);
+}
+
+.admin-panel-empty__message {
+    margin: 0;
+    font-size: 10px;
+    line-height: 1.5;
+    color: var(--muted-light);
+    text-align: center;
+}
+
+.admin-mini-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.admin-mini-table th,
+.admin-mini-table td {
+    padding: 12px 20px;
+    text-align: left;
+    font-size: 10px;
+    border-bottom: 1px solid var(--line-soft);
+}
+
+.admin-mini-table th {
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    background: var(--surface-warm);
+}
+
+.admin-mini-table td {
+    color: var(--ink-soft);
+}
+
+.admin-mini-table tr:last-child td {
+    border-bottom: none;
+}
+
+.admin-mini-table__name {
+    font-weight: 700;
+    color: var(--ink);
+}
+
+.admin-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.admin-toolbar__count {
+    margin: 0;
+    font-size: 11px;
+    color: var(--muted);
+}
+
+.admin-toolbar__count strong {
+    color: var(--ink);
+    font-weight: 800;
+}
+
+.admin-search {
+    display: flex;
+    align-items: stretch;
+    max-width: 360px;
+    flex: 1;
+}
+
+.admin-search__input {
+    flex: 1;
+    min-width: 0;
+    border: 1px solid var(--line);
+    border-right: none;
+    padding: 10px 14px;
+    font-size: 12px;
+    background: var(--surface);
+}
+
+.admin-search__input::placeholder {
+    color: var(--muted-light);
+}
+
+.admin-search__btn {
+    border: 1px solid var(--ink);
+    background: var(--ink);
+    color: #fff;
+    padding: 0 18px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    cursor: pointer;
+}
+
+.admin-table-wrap {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    overflow-x: auto;
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 720px;
+    table-layout: fixed;
+}
+
+.admin-table col.col-id { width: 11%; }
+.admin-table col.col-name { width: 12%; }
+.admin-table col.col-nick { width: 12%; }
+.admin-table col.col-email { width: 28%; }
+.admin-table col.col-joined { width: 12%; }
+.admin-table col.col-state { width: 10%; }
+.admin-table col.col-actions { width: 72px; }
+
+.admin-table--books col.col-book-cover { width: 56px; }
+.admin-table--books col.col-book-id { width: 80px; }
+.admin-table--books col.col-book-title { width: 22%; }
+.admin-table--books col.col-book-writer { width: 12%; }
+.admin-table--books col.col-book-company { width: 14%; }
+.admin-table--books col.col-book-genre { width: 96px; }
+.admin-table--books col.col-book-joined { width: 96px; }
+
+.admin-table__genre {
+    width: 96px;
+    white-space: nowrap;
+}
+
+.admin-table thead th.col-actions,
+.admin-table tbody td.col-actions {
+    width: 72px;
+    padding-left: 8px;
+    padding-right: 12px;
+    text-align: right;
+}
+
+.admin-table thead th {
+    padding: 14px 20px;
+    text-align: left;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    background: var(--surface-warm);
+    border-bottom: 1px solid var(--line);
+}
+
+.admin-table tbody tr.admin-table__row td {
+    padding: 16px 20px;
+    font-size: 10px;
+    color: var(--muted);
+    border-bottom: 1px solid var(--line-soft);
+    vertical-align: middle;
+}
+
+.admin-table tbody tr.admin-table__row--highlight td {
+    background: #fff8f6;
+}
+
+.admin-table__id {
+    color: var(--muted-light);
+    font-size: 9px;
+}
+
+.admin-table__title {
+    font-family: var(--font-serif);
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--ink);
+}
+
+.admin-table__name {
+    font-weight: 700;
+    color: var(--ink);
+    font-size: 11px;
+}
+
+.admin-table__nick {
+    color: var(--ink);
+    font-size: 11px;
+}
+
+.admin-table__email {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.admin-table__actions {
+    display: flex;
+    gap: 4px;
+    justify-content: flex-end;
+}
+
+.admin-icon-btn {
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    border-radius: 2px;
+}
+
+.admin-icon-btn:hover {
+    color: var(--ink);
+    border-color: var(--line);
+    background: var(--surface-warm);
+}
+
+.admin-icon-btn svg {
+    width: 12px;
+    height: 12px;
+}
+
+.admin-icon-btn--danger:hover {
+    color: #ef5350;
+    border-color: rgba(239, 83, 80, 0.3);
+    background: #fff1f1;
+}
+
+.admin-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3px 8px;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+}
+
+.admin-badge--active {
+    background: rgba(76, 175, 80, 0.12);
+    color: #4caf50;
+}
+
+.admin-badge--dormant {
+    background: rgba(136, 136, 128, 0.12);
+    color: var(--muted);
+}
+
+.admin-badge--suspended {
+    background: #fff1f1;
+    color: #ef5350;
+}
+
+.admin-badge--genre {
+    background: rgba(123, 104, 238, 0.09);
+    color: #7b68ee;
+}
+
+/* 삭제 확인: 본문 행 바로 아래 table-row로 삽입 → 아래 행을 밀어냄 (오버레이 아님) */
+.admin-delete-row {
+    display: none;
+}
+
+.admin-delete-row.is-open {
+    display: table-row;
+}
+
+.admin-table__row.is-delete-open td {
+    border-bottom-color: transparent;
+}
+
+.admin-delete-row.is-open td {
+    padding: 0;
+    border-bottom: 1px solid var(--line-soft);
+    vertical-align: middle;
+}
+
+.admin-delete-panel {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    min-height: 57px;
+    padding: 14px 20px;
+    background: #fff1f1;
+    flex-wrap: wrap;
+}
+
+.admin-delete-panel__message {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    font-size: 11px;
+    line-height: 1.5;
+    color: #ef5350;
+}
+
+.admin-delete-panel__message svg {
+    flex-shrink: 0;
+    width: 13px;
+    height: 13px;
+}
+
+.admin-delete-panel__message strong {
+    font-weight: 900;
+}
+
+.admin-delete-panel__actions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+    align-items: center;
+}
+
+.admin-delete-panel__actions form {
+    margin: 0;
+}
+
+.admin-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    height: 29px;
+    padding: 0 16px;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--muted);
+    cursor: pointer;
+}
+
+.admin-btn--ghost:hover {
+    color: var(--ink);
+    border-color: #d4cfc8;
+}
+
+.admin-btn--danger {
+    background: #ef5350;
+    border-color: #ef5350;
+    color: #fff;
+}
+
+.admin-btn--danger svg {
+    width: 11px;
+    height: 11px;
+}
+
+.admin-book-thumb {
+    width: 32px;
+    height: 44px;
+    display: grid;
+    place-items: center;
+    background: rgba(123, 104, 238, 0.13);
+    border: 1px solid var(--line);
+    color: #7b68ee;
+    overflow: hidden;
+}
+
+.admin-book-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.admin-book-thumb svg {
+    width: 12px;
+    height: 12px;
+}
+
+.admin-book-cell {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* 회원 편집 모달 */
+.admin-dialog-backdrop,
+.admin-dialog-backdrop:not([hidden]) {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    background: rgba(17, 17, 17, 0.45);
+}
+
+.admin-dialog {
+    position: fixed;
+    z-index: 210;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: min(480px, calc(100vw - 32px));
+    margin: 0;
+    padding: 0;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.12);
+}
+
+.admin-dialog:not([open]):not(.is-fallback-open) {
+    display: none;
+}
+
+.admin-dialog__inner {
+    padding: 28px 28px 24px;
+}
+
+.admin-dialog__head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 24px;
+}
+
+.admin-dialog__title {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 900;
+}
+
+.admin-dialog__close {
+    border: none;
+    background: transparent;
+    font-size: 20px;
+    line-height: 1;
+    color: var(--muted);
+    cursor: pointer;
+    padding: 0 4px;
+}
+
+.admin-dialog__field {
+    margin-bottom: 16px;
+}
+
+.admin-dialog__label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    color: var(--muted-light);
+}
+
+.admin-dialog__value {
+    margin: 0;
+    font-size: 13px;
+    color: var(--ink);
+}
+
+.admin-dialog__value--readonly {
+    padding: 10px 12px;
+    background: var(--surface-warm);
+    border: 1px solid var(--line-soft);
+    color: var(--ink-soft);
+    font-size: 12px;
+}
+
+.admin-dialog__states {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.admin-dialog__state {
+    flex: 1;
+    min-width: 0;
+    padding: 10px 8px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--muted);
+    cursor: pointer;
+}
+
+.admin-dialog__state.is-selected {
+    border-color: var(--ink);
+    color: var(--ink);
+    background: var(--surface-warm);
+}
+
+.admin-dialog__state[data-state-value="활동"].is-selected {
+    border-color: #4caf50;
+    color: #4caf50;
+    background: rgba(76, 175, 80, 0.08);
+}
+
+.admin-dialog__state[data-state-value="휴먼"].is-selected {
+    border-color: var(--muted);
+    color: var(--ink-soft);
+}
+
+.admin-dialog__state[data-state-value="정지"].is-selected {
+    border-color: #ef5350;
+    color: #ef5350;
+    background: #fff1f1;
+}
+
+.admin-dialog__actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 24px;
+}
+
+.admin-dialog__actions .admin-btn {
+    flex: 1;
+    height: 40px;
+    font-size: 10px;
+}
+
+.admin-dialog__actions .admin-btn--primary {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: #fff;
+}
+
+@media (max-width: 960px) {
+    .admin__shell {
+        flex-direction: column;
+    }
+
+    .admin-sidebar {
+        flex: none;
+        width: 100%;
+        flex-direction: row;
+        flex-wrap: wrap;
+        padding: 12px 0;
+    }
+
+    .admin-sidebar__brand {
+        border: none;
+        padding-bottom: 0;
+    }
+
+    .admin-sidebar__nav {
+        flex-direction: row;
+        padding: 0 12px;
+        flex: 1;
+    }
+
+    .admin-sidebar__link {
+        padding: 10px 12px;
+        border-left: none;
+        border-bottom: 2px solid transparent;
+    }
+
+    .admin-sidebar__link.is-active {
+        border-bottom-color: #fff;
+        border-left: none;
+    }
+
+    .admin-sidebar__footer {
+        display: none;
+    }
+
+    .admin__main {
+        padding: 24px 20px 40px;
+    }
+
+    .admin-stats,
+    .admin-panels {
+        grid-template-columns: 1fr;
+    }
+}

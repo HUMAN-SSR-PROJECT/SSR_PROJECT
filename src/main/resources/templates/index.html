@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}"
+      lang="ko">
+<head>
+    <title>동네북</title>
+    <th:block layout:fragment="extra-head">
+        <link rel="stylesheet" th:href="@{/css/home.css}">
+    </th:block>
+</head>
+<body>
+<div layout:fragment="content" class="home">
+    <section class="home-hero">
+        <div class="home-hero__bg" aria-hidden="true">
+            <img th:src="@{/images/hero-library.jpg}" alt="">
+            <span class="home-hero__overlay"></span>
+        </div>
+        <p class="home-hero__side-label">THE INTELLIGENT READING PLATFORM</p>
+        <div class="home-hero__content">
+            <p class="home-hero__eyebrow">INTEGRATED LIBRARY SYSTEM</p>
+            <h1 class="home-hero__title">
+                <span>어디에나 있고,</span>
+                <span>어디에도 없는</span>
+                <span>당신의 책.</span>
+            </h1>
+            <p class="home-hero__desc">
+                동네북은 파편화된 도서관 정보를 통합하여 내 주변 장서 검색부터 맞춤형 독서 기록까지 제공하는 개인 지능형 서재입니다.
+            </p>
+            <form class="home-hero__search"
+                  th:action="@{/book/search/execute}"
+                  th:attr="data-empty-action=@{/book/search}"
+                  method="get"
+                  data-hero-search>
+                <label class="visually-hidden" for="hero-keyword">도서 검색</label>
+                <div class="home-hero__search-field">
+                    <span class="home-hero__search-icon" aria-hidden="true">
+                        <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" stroke-width="1.2"/>
+                            <path d="M10 10L13 13" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+                        </svg>
+                    </span>
+                    <input id="hero-keyword"
+                           type="search"
+                           name="keyword"
+                           placeholder="어떤 이야기를 찾고 계신가요?"
+                           autocomplete="off">
+                </div>
+                <button type="submit" class="home-hero__search-btn">도서 탐색하기</button>
+            </form>
+        </div>
+    </section>
+
+    <section class="home-features" aria-label="주요 기능">
+        <article class="home-feature">
+            <p class="home-feature__num">01</p>
+            <h2 class="home-feature__title">통합 검색 &amp; 지도</h2>
+            <p class="home-feature__desc">내 주변 도서관의 실시간 대출 가능 여부를 지도에서 한눈에 확인하세요.</p>
+            <a class="home-feature__link" th:href="@{/book/search}">VIEW →</a>
+        </article>
+        <article class="home-feature">
+            <p class="home-feature__num">02</p>
+            <h2 class="home-feature__title">스마트 서재</h2>
+            <p class="home-feature__desc">읽을 책, 읽는 중인 책을 관리하고 나만의 독서 기록을 쌓아 나가세요.</p>
+            <a class="home-feature__link" th:href="@{/mylib/readbook}">VIEW →</a>
+        </article>
+        <article class="home-feature">
+            <p class="home-feature__num">03</p>
+            <h2 class="home-feature__title">독서 데이터 통계</h2>
+            <p class="home-feature__desc">당신의 독서 습관을 시각화된 데이터로 분석하고 성장하세요.</p>
+            <a class="home-feature__link" th:href="@{/mylib/stats}">VIEW →</a>
+        </article>
+    </section>
+
+    <section class="home-stats">
+        <div class="home-stats__copy">
+            <h2 class="home-stats__title">
+                <span>통계로 증명</span>
+                <span>하는</span>
+                <span>독서 정체성</span>
+            </h2>
+            <p class="home-stats__desc">
+                책을 읽는 것은 단순히 정보를 습득하는 것을 넘어, 나만의 세계를 구축하는 일입니다.
+                동네북은 정밀한 데이터 분석을 통해 당신의 여정을 탐험합니다.
+            </p>
+            <a class="home-stats__cta" th:href="@{/mylib/stats}">REVIEW ANALYTICS →</a>
+        </div>
+        <div class="home-stats__visual">
+            <img th:src="@{/images/stats-preview.jpg}" alt="도서관 통로">
+            <aside class="home-stats__card">
+                <p class="home-stats__card-label">SYSTEM</p>
+                <p class="home-stats__card-label">PERFORMANCE</p>
+                <p class="home-stats__card-value">78%</p>
+                <p class="home-stats__card-caption">완독률</p>
+                <hr>
+                <p class="home-stats__card-meta">SQL OPTIMIZED</p>
+                <p class="home-stats__card-meta">STATISTICS PIPELINE</p>
+            </aside>
+        </div>
+    </section>
+</div>
+</body>
+</html>

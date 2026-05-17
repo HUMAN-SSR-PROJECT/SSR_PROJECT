@@ -22,8 +22,8 @@ public class MemberDao {
                       "MEMBER_NICKNAME, MEMBER_BIRTH, MEMBER_STATE, MEMBER_RULE) " +
                       "VALUES (MEMBER_SEQ.NEXTVAL, ?, ?, ?, ?, ?, ?, ?)";
         return jdbcTemplate.update(sql,
-                members.getEmail().trim(), members.getPassword(), members.getName().trim(),
-                members.getNickname().trim(), members.getBirth(),
+                trimToEmpty(members.getEmail()), members.getPassword(), trimToEmpty(members.getName()),
+                trimToEmpty(members.getNickname()), members.getBirth(),
                 members.getState(), members.getRule());
     }
 
@@ -54,12 +54,44 @@ public class MemberDao {
                 .birth(rs.getDate("MEMBER_BIRTH") != null ? rs.getDate("MEMBER_BIRTH").toLocalDate() : null)
                 .state(rs.getString("MEMBER_STATE"))
                 .rule(rs.getString("MEMBER_RULE")) // ADMIN 여부 판별의 핵심 필드
+                .imgUrl(rs.getString("MEMBER_IMGURL"))
+                .intro(rs.getString("MEMBER_INTRO"))
+                .addr(rs.getString("MEMBER_ADDR"))
+                .createdAt(rs.getTimestamp("MEMBER_CREATED_AT") != null
+                        ? rs.getTimestamp("MEMBER_CREATED_AT").toLocalDateTime() : null)
+                .updatedAt(rs.getTimestamp("MEMBER_UPDATED_AT") != null
+                        ? rs.getTimestamp("MEMBER_UPDATED_AT").toLocalDateTime() : null)
                 .build();
+    }
+
+    private static String trimToEmpty(String value) {
+        return value == null ? "" : value.trim();
     }
     // 이메일 중복 체크
     public boolean existsByEmail(String email) {
         String sql = "SELECT COUNT(*) FROM MEMBERS WHERE MEMBER_EMAIL = ?";
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class, email.trim());
+        return count != null && count > 0;
+    }
+
+    // 닉네임 중복 체크
+    public boolean existsByNickname(String nickname) {
+        if (nickname == null || nickname.isBlank()) {
+            return false;
+        }
+        String sql = "SELECT COUNT(*) FROM MEMBERS WHERE MEMBER_NICKNAME = ?";
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, nickname.trim());
+        return count != null && count > 0;
+    }
+
+    /** 마이페이지 수정 — 본인 제외 닉네임 중복 */
+    public boolean existsByNicknameExcept(Long memberId, String nickname) {
+        if (nickname == null || nickname.isBlank() || memberId == null) {
+            return false;
+        }
+        String sql = "SELECT COUNT(*) FROM MEMBERS WHERE MEMBER_NICKNAME = ? AND MEMBER_ID <> ?";
+        Integer count =
+            jdbcTemplate.queryForObject(sql, Integer.class, nickname.trim(), memberId);
         return count != null && count > 0;
     }
 
@@ -84,19 +116,54 @@ public class MemberDao {
             return Optional.empty();
         }
     }
+    private static final String MEMBER_KEYWORD_WHERE =
+            " WHERE MEMBER_EMAIL LIKE ? OR MEMBER_NAME LIKE ? OR MEMBER_NICKNAME LIKE ?"
+                    + " OR TO_CHAR(MEMBER_ID) LIKE ?";
+
     // 관리자 전체 회원 조회 및 검색 @param keyword : 검색어 (빈값일 경우 전체 조회)
     public List<Members> findAll(String keyword) {
-        StringBuilder sql = new StringBuilder("SELECT * FROM MEMBERS");
-
-        // 키워드가 있을 경우에만 WHERE 절 추가
         if (keyword != null && !keyword.trim().isEmpty()) {
-            sql.append(" WHERE MEMBER_EMAIL LIKE ? OR MEMBER_NAME LIKE ? OR MEMBER_NICKNAME LIKE ?");
+            String sql = "SELECT * FROM MEMBERS" + MEMBER_KEYWORD_WHERE + " ORDER BY MEMBER_ID DESC";
             String searchTag = "%" + keyword.trim() + "%";
-            return jdbcTemplate.query(sql.toString(), memberRowMapper(), searchTag, searchTag, searchTag);
+            return jdbcTemplate.query(
+                    sql, memberRowMapper(), searchTag, searchTag, searchTag, searchTag);
         }
+        return jdbcTemplate.query("SELECT * FROM MEMBERS ORDER BY MEMBER_ID DESC", memberRowMapper());
+    }
 
-        // 키워드가 없으면 전체 조회
-        return jdbcTemplate.query(sql.toString(), memberRowMapper());
+    public List<Members> findAllPaged(String keyword, int offset, int limit) {
+        String inner;
+        Object[] innerArgs;
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            inner = "SELECT * FROM MEMBERS" + MEMBER_KEYWORD_WHERE + " ORDER BY MEMBER_ID DESC";
+            String searchTag = "%" + keyword.trim() + "%";
+            innerArgs = new Object[]{searchTag, searchTag, searchTag, searchTag};
+        } else {
+            inner = "SELECT * FROM MEMBERS ORDER BY MEMBER_ID DESC";
+            innerArgs = new Object[0];
+        }
+        int endRow = offset + limit;
+        String sql = "SELECT * FROM ("
+                + "  SELECT m.*, ROWNUM rn FROM ("
+                + inner
+                + "  ) m WHERE ROWNUM <= ?"
+                + ") WHERE rn > ?";
+        Object[] args = new Object[innerArgs.length + 2];
+        System.arraycopy(innerArgs, 0, args, 0, innerArgs.length);
+        args[innerArgs.length] = endRow;
+        args[innerArgs.length + 1] = offset;
+        return jdbcTemplate.query(sql, memberRowMapper(), args);
+    }
+
+    public int countAll(String keyword) {
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            String sql = "SELECT COUNT(*) FROM MEMBERS" + MEMBER_KEYWORD_WHERE;
+            String searchTag = "%" + keyword.trim() + "%";
+            Integer count = jdbcTemplate.queryForObject(sql, Integer.class,
+                    searchTag, searchTag, searchTag, searchTag);
+            return count != null ? count : 0;
+        }
+        return getTotalMemberCount();
     }
 
     /**
@@ -130,12 +197,11 @@ public class MemberDao {
         // 결과가 단일 숫아이므로 queryForObject가 가장 적합합니다.
         return jdbcTemplate.queryForObject(sql, Integer.class);
     }
-    // 최근 가입 회원 (10명)
+    // 최근 가입 회원 (10명) — Oracle 11g 호환 (ROWNUM)
     public List<Members> findRecentMembers() {
-        // Oracle 기준: 가입일 내림차순 정렬 후 상위 10개 행 선택
-        String sql = "SELECT * FROM MEMBERS ORDER BY CREATED_AT DESC FETCH FIRST 10 ROWS ONLY";
-
-        // 이전에 만들어둔 memberRowMapper를 그대로 재사용합니다.
+        String sql = "SELECT * FROM ("
+                + "  SELECT * FROM MEMBERS ORDER BY MEMBER_CREATED_AT DESC"
+                + ") WHERE ROWNUM <= 10";
         return jdbcTemplate.query(sql, memberRowMapper());
     }
 }

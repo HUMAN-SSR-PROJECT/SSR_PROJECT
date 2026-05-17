@@ -1,8 +1,6 @@
 package com.ssrpro.library.dao;
 
 import com.ssrpro.library.dto.entity.Library;
-import com.ssrpro.library.dto.response.LibraryRes;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -18,38 +16,46 @@ public class LibraryDao {
     private final JdbcTemplate jdbcTemplate;
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
-    // 도서관 코드로 도서관 정보 반환
-    public List<Library> findByLibraryCode(List<String> libraryCodes){
-        String sql = "SELECT * " +
-                        "FROM LIBRARY l " +
-                        "WHERE l.LIBRARY_CODE IN (:codes) ";
+    public List<Library> findByLibraryCode(List<String> libraryCodes) {
+        String sql = "SELECT * FROM LIBRARY l WHERE l.LIBRARY_CODE IN (:codes) ";
 
         MapSqlParameterSource params = new MapSqlParameterSource("codes", libraryCodes);
 
-        List<Library> libraryList = namedParameterJdbcTemplate.query(sql, params, new BeanPropertyRowMapper<>(Library.class));
-
-        return libraryList;
+        return namedParameterJdbcTemplate.query(sql, params, new BeanPropertyRowMapper<>(Library.class));
     }
 
-    // 도서관 정보 입력
-    public boolean insertLibrary(Library library){
-        String sql = "INSERT INTO LIBRARY " +
-                        "(LIBRARY_ID, LIBRARY_CODE, LIBRARY_NAME, LIBRARY_ADDR, LIBRARY_LAT, LIBRARY_LON) " +
-                        "VALUES (LIBRARY_SEQ.NEXTVAL, ?, ?, ?, ?, ?) ";
+    public boolean existsByLibraryCode(Long libraryCode) {
+        String sql = "SELECT COUNT(*) FROM LIBRARY WHERE LIBRARY_CODE = ?";
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, libraryCode);
+        return count != null && count > 0;
+    }
+
+    public boolean existsByLibraryAddr(String libraryAddr) {
+        if (libraryAddr == null || libraryAddr.isBlank()) {
+            return false;
+        }
+        String sql = "SELECT COUNT(*) FROM LIBRARY WHERE LIBRARY_ADDR = ?";
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, libraryAddr.trim());
+        return count != null && count > 0;
+    }
+
+    public boolean insertLibrary(Library library) {
+        String sql = "INSERT INTO LIBRARY "
+                + "(LIBRARY_ID, LIBRARY_CODE, LIBRARY_NAME, LIBRARY_ADDR, LIBRARY_LAT, LIBRARY_LON) "
+                + "VALUES (LIBRARY_SEQ.NEXTVAL, ?, ?, ?, ?, ?) ";
         int rst = jdbcTemplate.update(sql,
-                                        library.getLibraryCode(),
-                                        library.getLibraryName(),
-                                        library.getLibraryAddr(),
-                                        library.getLibraryLat(),
-                                        library.getLibraryLon());
+                library.getLibraryCode(),
+                library.getLibraryName(),
+                library.getLibraryAddr(),
+                library.getLibraryLat(),
+                library.getLibraryLon());
 
         return rst > 0;
     }
 
-    // 도서관 총 개수
-    public int countAllLibrary(){
+    public int countAllLibrary() {
         String sql = "SELECT COUNT(*) FROM LIBRARY";
-        int rst =  jdbcTemplate.queryForObject(sql, Integer.class);
-        return rst;
+        Integer rst = jdbcTemplate.queryForObject(sql, Integer.class);
+        return rst != null ? rst : 0;
     }
 }

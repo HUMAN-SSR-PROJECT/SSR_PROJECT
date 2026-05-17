@@ -36,7 +36,7 @@ public class ReadBookDao {
         """;
     List<Integer> rst = jdbcTemplate.query(
       sql,
-      (rs, n) -> rs.getInt("state"),
+      (rs, n) -> rs.getInt("STATE"),
       memberId,
       bookId
     );
@@ -47,7 +47,7 @@ public class ReadBookDao {
   // 읽을 책 추가
   public boolean addToReadSoon(Long memberId, Long bookId) {
     String sql = """
-        INSERT INTO read_soon 
+        INSERT INTO read_soon (member_id, book_id)
         VALUES (?, ?)
         """;
     int rst = jdbcTemplate.update(sql, memberId, bookId);
@@ -68,12 +68,12 @@ public class ReadBookDao {
         """;
     return jdbcTemplate.query(sql, (rs, n) -> {
       ReadSoonRes readSoonRes = new ReadSoonRes();
-      readSoonRes.setBookId(rs.getLong("book_id"));
-      readSoonRes.setBookImg(rs.getString("book_img"));
-      readSoonRes.setBookGenre(rs.getString("book_genre"));
-      readSoonRes.setBookTitle(rs.getString("book_title"));
-      readSoonRes.setBookWriter(rs.getString("book_writer"));
-      readSoonRes.setBookRating(rs.getDouble("book_rating"));
+      readSoonRes.setBookId(rs.getLong("BOOK_ID"));
+      readSoonRes.setBookImg(rs.getString("BOOK_IMG"));
+      readSoonRes.setBookGenre(rs.getString("BOOK_GENRE"));
+      readSoonRes.setBookTitle(rs.getString("BOOK_TITLE"));
+      readSoonRes.setBookWriter(rs.getString("BOOK_WRITER"));
+      readSoonRes.setBookRating(rs.getDouble("BOOK_RATING"));
       return readSoonRes;
     }, memberId);
   }
@@ -102,7 +102,7 @@ public class ReadBookDao {
   public List<ReadBookRes> readingList(Long memberId) {
     String sql = """
         SELECT rb.book_id, b.book_img, b.book_genre, 
-               b.book_title, b.book_writer, b.book_rating 
+               b.book_title, b.book_writer, rb.read_book_rating 
         FROM read_book rb 
         JOIN book b 
         ON rb.book_id = b.book_id 
@@ -111,12 +111,12 @@ public class ReadBookDao {
         """;
     return jdbcTemplate.query(sql, (rs, n) -> {
       ReadBookRes readBookRes = new ReadBookRes();
-      readBookRes.setBookId(rs.getLong("book_id"));
-      readBookRes.setBookImg(rs.getString("book_img"));
-      readBookRes.setBookGenre(rs.getString("book_genre"));
-      readBookRes.setBookTitle(rs.getString("book_title"));
-      readBookRes.setBookWriter(rs.getString("book_writer"));
-      readBookRes.setReadBookRating(rs.getDouble("book_rating"));
+      readBookRes.setBookId(rs.getLong("BOOK_ID"));
+      readBookRes.setBookImg(rs.getString("BOOK_IMG"));
+      readBookRes.setBookGenre(rs.getString("BOOK_GENRE"));
+      readBookRes.setBookTitle(rs.getString("BOOK_TITLE"));
+      readBookRes.setBookWriter(rs.getString("BOOK_WRITER"));
+      readBookRes.setReadBookRating(rs.getDouble("READ_BOOK_RATING"));
       return readBookRes;
     }, memberId);
   }
@@ -147,7 +147,7 @@ public class ReadBookDao {
     String sql = """
         SELECT rb.book_id, b.book_img, b.book_genre, b.book_title, 
                b.book_writer, rb.read_book_rating, 
-               rb.read_book_end 
+               rb.read_book_end, rb.read_book_memo 
         FROM read_book rb 
         JOIN book b 
         ON rb.book_id = b.book_id 
@@ -156,13 +156,15 @@ public class ReadBookDao {
         """;
     return jdbcTemplate.query(sql, (rs, n) -> {
       ReadBookRes readBookRes = new ReadBookRes();
-      readBookRes.setBookId(rs.getLong("book_id"));
-      readBookRes.setBookImg(rs.getString("book_img"));
-      readBookRes.setBookGenre(rs.getString("book_genre"));
-      readBookRes.setBookTitle(rs.getString("book_title"));
-      readBookRes.setBookWriter(rs.getString("book_writer"));
-      readBookRes.setReadBookRating(rs.getDouble("read_book_rating"));
-      readBookRes.setReadBookEnd(rs.getTimestamp("read_book_end").toLocalDateTime());
+      readBookRes.setBookId(rs.getLong("BOOK_ID"));
+      readBookRes.setBookImg(rs.getString("BOOK_IMG"));
+      readBookRes.setBookGenre(rs.getString("BOOK_GENRE"));
+      readBookRes.setBookTitle(rs.getString("BOOK_TITLE"));
+      readBookRes.setBookWriter(rs.getString("BOOK_WRITER"));
+      readBookRes.setReadBookRating(rs.getDouble("READ_BOOK_RATING"));
+      var endTs = rs.getTimestamp("READ_BOOK_END");
+      readBookRes.setReadBookEnd(endTs != null ? endTs.toLocalDateTime() : null);
+      readBookRes.setReadBookMemo(rs.getString("READ_BOOK_MEMO"));
       return readBookRes;
     }, memberId);
   }
@@ -176,9 +178,10 @@ public class ReadBookDao {
         """;
     return jdbcTemplate.queryForObject(sql, (rs, n) -> {
       ReadBookRes readBookRes = new ReadBookRes();
-      readBookRes.setReadBookRating(rs.getDouble("read_book_rating"));
-      readBookRes.setReadBookEnd(rs.getTimestamp("read_book_end").toLocalDateTime());
-      readBookRes.setReadBookMemo(rs.getString("read_book_memo"));
+      readBookRes.setReadBookRating(rs.getDouble("READ_BOOK_RATING"));
+      var endTs = rs.getTimestamp("READ_BOOK_END");
+      readBookRes.setReadBookEnd(endTs != null ? endTs.toLocalDateTime() : null);
+      readBookRes.setReadBookMemo(rs.getString("READ_BOOK_MEMO"));
       return readBookRes;
     }, memberId, bookId);
   }
@@ -197,13 +200,15 @@ public class ReadBookDao {
         """;
     return jdbcTemplate.query(sql, (rs, n) -> {
       ReadBookRes readBookRes = new ReadBookRes();
-      readBookRes.setBookId(rs.getLong("book_id"));
-      readBookRes.setReadBookStart(rs.getTimestamp("read_book_start").toLocalDateTime());
-      readBookRes.setReadBookEnd(rs.getTimestamp("read_book_end").toLocalDateTime());
-      readBookRes.setReadBookRating(rs.getDouble("read_book_rating"));
-      readBookRes.setBookGenre(rs.getString("book_genre"));
-      readBookRes.setBookTitle(rs.getString("book_title"));
-      readBookRes.setBookWriter(rs.getString("book_writer"));
+      readBookRes.setBookId(rs.getLong("BOOK_ID"));
+      var startTs = rs.getTimestamp("READ_BOOK_START");
+      var endTs = rs.getTimestamp("READ_BOOK_END");
+      readBookRes.setReadBookStart(startTs != null ? startTs.toLocalDateTime() : null);
+      readBookRes.setReadBookEnd(endTs != null ? endTs.toLocalDateTime() : null);
+      readBookRes.setReadBookRating(rs.getDouble("READ_BOOK_RATING"));
+      readBookRes.setBookGenre(rs.getString("BOOK_GENRE"));
+      readBookRes.setBookTitle(rs.getString("BOOK_TITLE"));
+      readBookRes.setBookWriter(rs.getString("BOOK_WRITER"));
       return readBookRes;
     }, memberId);
   }

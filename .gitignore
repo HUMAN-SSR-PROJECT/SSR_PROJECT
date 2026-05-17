@@ -38,7 +38,9 @@ out/
 .env
 /src/main/resources/templates/test/
 /src/main/resources/serviceAccountKey.json
-.cursor
+# Cursor IDE (rules는 커밋, 나머지 로컬 상태는 제외)
+.cursor/*
+.cursor/
 
 ### Local instructions (not committed) ###
 cursor/

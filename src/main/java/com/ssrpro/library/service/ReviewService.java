@@ -45,10 +45,11 @@ public class ReviewService {
   // DAO의 update는 MEMBER_ID 조건으로 본인 리뷰만 수정
   // 반환값이 0이면 본인 리뷰가 아니거나 존재하지 않는 리뷰
   public int update(ReviewReq req, Long memberId) {
-
-    // Req → 엔티티 변환 후 UPDATE
-    // memberId 조건으로 본인 리뷰만 수정 가능
     return reviewDao.update(req.toEntity(memberId));
+  }
+
+  public int adminUpdate(ReviewReq req) {
+    return reviewDao.adminUpdate(req.toEntity(null));
   }
 
   // 리뷰 삭제 (본인 확인)
@@ -80,6 +81,7 @@ public class ReviewService {
         .map(review -> ReviewRes.builder()
             // 리뷰 기본 정보
             .reviewId(review.getReviewId())
+            .memberId(review.getMemberId())
             .reviewComment(review.getReviewComment())
             .reviewRating(review.getReviewRating())
             .reviewCreatedAt(review.getReviewCreatedAt())
@@ -90,7 +92,7 @@ public class ReviewService {
             // 좋아요 수 - COUNT 쿼리로 조회
             .likeCount((long) reviewDao.countLikeByReviewId(review.getReviewId()))
             // 로그인한 회원의 좋아요 여부
-            .isLiked(reviewDao.existsLike(review.getReviewId(), memberId))
+            .isLiked(memberId != null && reviewDao.existsLike(review.getReviewId(), memberId))
             .build())
         // stream()으로 가공된 ReviewRes 객체들을 List로 수집하여 반환
         .collect(Collectors.toList());

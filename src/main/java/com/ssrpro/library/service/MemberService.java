@@ -11,8 +11,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import com.ssrpro.library.dto.response.PageResult;
+
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -24,29 +27,58 @@ public class MemberService {
     @Value("${firebase.storage.bucket}")
     private String bucketName;
 
-    // 회원가입
-    public boolean join(SignUpReq req) {
-        // 1. 이메일 중복 체크 (null 및 trim 처리 포함)
-        if (req.getEmail() == null || memberDao.existsByEmail(req.getEmail().trim())) {
+    public boolean existsByEmail(String email) {
+        if (email == null || email.isBlank()) {
             return false;
         }
+        return memberDao.existsByEmail(email.trim());
+    }
 
-        // 2. 비밀번호 유효성 체크
+    public boolean existsByNickname(String nickname) {
+        if (nickname == null || nickname.isBlank()) {
+            return false;
+        }
+        return memberDao.existsByNickname(nickname.trim());
+    }
+
+    /**
+     * 회원가입. 성공 시 empty, 실패 시 사용자에게 보여줄 메시지.
+     */
+    public Optional<String> join(SignUpReq req) {
+        if (req.getEmail() == null || req.getEmail().isBlank()) {
+            return Optional.of("이메일을 입력해 주세요.");
+        }
+        if (req.getNickname() == null || req.getNickname().isBlank()) {
+            return Optional.of("닉네임을 입력해 주세요.");
+        }
+
+        String email = req.getEmail().trim();
+        String nickname = req.getNickname().trim();
+
+        if (memberDao.existsByEmail(email)) {
+            return Optional.of("이미 사용 중인 이메일입니다.");
+        }
+        if (memberDao.existsByNickname(nickname)) {
+            return Optional.of("이미 사용 중인 닉네임입니다.");
+        }
+
         if (req.getPassword() == null || req.getPassword().contains(" ")) {
-            return false;
+            return Optional.of("비밀번호를 확인해 주세요. (공백 불가)");
         }
 
-        // 3. 입력값 정제 (이메일은 위에서 null 체크 완료)
         req.setPassword(passwordEncoder.encode(req.getPassword()));
-        req.setEmail(req.getEmail().trim());
-        if (req.getName() != null) req.setName(req.getName().trim());
-        if (req.getNickname() != null) req.setNickname(req.getNickname().trim());
+        req.setEmail(email);
+        if (req.getName() != null) {
+            req.setName(req.getName().trim());
+        }
+        req.setNickname(nickname);
 
-        // 4. 저장 실행
         Members member = req.toEntity();
         int result = memberDao.join(member);
-
-        return result > 0;
+        if (result <= 0) {
+            return Optional.of("회원가입에 실패했습니다. 잠시 후 다시 시도해 주세요.");
+        }
+        return Optional.empty();
     }
 
     // 아이디 찾기
@@ -70,36 +102,80 @@ public class MemberService {
 
         return memberDao.findPw(req);
     }
-    // 마이페이지 수정
-    public boolean updateProfile(Long memberId, MypageUpdateReq req)  throws IOException {
-        String imageUrl = null;
-
-        // 1. 이미지가 첨부되었는지 확인
-        if (req.getImgUrl() != null && !req.getImgUrl().isEmpty()) {
-            MultipartFile file = req.getImgUrl();
-
-            // 파일명 생성 (중복 방지를 위해 memberId와 타임스탬프 조합)
-            String fileName = "profile/" + memberId + "_" + System.currentTimeMillis() + "_" + file.getOriginalFilename();
-
-            // 2. Firebase Storage에 파일 업로드
-            // .create(경로, 파일바이트, 파일타입)
-            storageBucket.create(fileName, file.getBytes(), file.getContentType());
-
-            // 3. 업로드된 파일의 공용 URL 생성 (고정 형식)
-            // Firebase Storage의 고정 URL 형식입니다.
-            imageUrl = String.format("https://firebasestorage.googleapis.com/v0/b/%s/o/%s?alt=media",
-                    bucketName, fileName.replace("/", "%2F"));
+    // 마이페이지 수정 — 실패 시 메시지
+    public Optional<String> updateProfile(Long memberId, MypageUpdateReq req) {
+        if (req == null) {
+            return Optional.of("요청 정보가 없습니다.");
+        }
+        String nickname = req.getNickname() == null ? "" : req.getNickname().trim();
+        if (nickname.isBlank()) {
+            return Optional.of("닉네임을 입력해 주세요.");
+        }
+        if (memberDao.existsByNicknameExcept(memberId, nickname)) {
+            return Optional.of("이미 사용 중인 닉네임입니다.");
         }
 
-        // 4. 엔티티 변환 (imageUrl 포함)
+        Members existing = getMemberById(memberId);
+        String imageUrl = existing.getImgUrl();
+
+        MultipartFile file = req.getImgUrl();
+        if (file != null && !file.isEmpty()) {
+            String fileName =
+                "profile/"
+                    + memberId
+                    + "_"
+                    + System.currentTimeMillis()
+                    + "_"
+                    + file.getOriginalFilename();
+
+            try {
+                storageBucket.create(fileName, file.getBytes(), file.getContentType());
+            } catch (IOException e) {
+                return Optional.of("프로필 이미지 업로드에 실패했습니다.");
+            }
+
+            imageUrl =
+                String.format(
+                    "https://firebasestorage.googleapis.com/v0/b/%s/o/%s?alt=media",
+                    bucketName,
+                    fileName.replace("/", "%2F"));
+        }
+
         Members member = req.toEntity(memberId);
-        if (imageUrl != null) {
-            member.setImgUrl(imageUrl); // 엔티티에 사진 URL 세팅
-        }
+        member.setNickname(nickname);
+        member.setImgUrl(imageUrl);
+        member.setIntro(trimToNull(req.getIntro()));
+        member.setAddr(trimToNull(req.getAddr()));
 
-        // 5. DB 업데이트
         int result = memberDao.updateMemberProfile(member);
-        return result > 0;
+        return result > 0 ? Optional.empty() : Optional.of("프로필 저장에 실패했습니다.");
+    }
+
+    public boolean withdrawMember(Long memberId) {
+        return memberDao.deleteMember(memberId) > 0;
+    }
+
+    private static String trimToNull(String value) {
+        if (value == null) {
+            return null;
+        }
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? null : trimmed;
+    }
+
+    /** 아바타 이니셜 (이미지 없을 때) */
+    public static String avatarInitial(Members member) {
+        if (member == null) {
+            return "?";
+        }
+        String source = member.getNickname();
+        if (source == null || source.isBlank()) {
+            source = member.getName();
+        }
+        if (source == null || source.isBlank()) {
+            return "?";
+        }
+        return source.substring(0, 1).toUpperCase();
     }
 
     // 마이페이지 조회를 위한 회원 정보 획득
@@ -107,10 +183,14 @@ public class MemberService {
         return memberDao.findById(id).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원 입니다."));
     }
 
-   // 관리자용 회원 목록 조회
-    public List<Members> getAllMembers(String keyword) {
-        // 키워드가 null이면 빈 문자열로 처리하여 전체 조회가 되도록 함
-        return memberDao.findAll(keyword == null ? "" : keyword);
+    /** 관리자 회원 목록 — 페이지당 {@link PageResult#DEFAULT_SIZE}건 */
+    public PageResult<Members> getMembersPaged(String keyword, int page) {
+        int safePage = Math.max(page, 1);
+        String trimmed = keyword == null ? "" : keyword.trim();
+        int offset = (safePage - 1) * PageResult.DEFAULT_SIZE;
+        long total = memberDao.countAll(trimmed);
+        List<Members> content = memberDao.findAllPaged(trimmed, offset, PageResult.DEFAULT_SIZE);
+        return PageResult.of(content, safePage, PageResult.DEFAULT_SIZE, total);
     }
 
     // 관리자 회원 상태 변경

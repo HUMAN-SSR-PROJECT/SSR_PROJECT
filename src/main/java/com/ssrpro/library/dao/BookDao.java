@@ -35,19 +35,60 @@ public class BookDao {
                     rs.getTimestamp("BOOK_UPDATED_AT").toLocalDateTime() : null)
             .build(); //
 
+    private static final String KEYWORD_WHERE =
+            "WHERE BOOK_TITLE LIKE ? OR BOOK_WRITER LIKE ? OR BOOK_GENRE LIKE ? OR BOOK_COMPANY LIKE ? ";
+
     // 도서 통합 검색
     public List<Book> findByKeyword(String keyword) {
-        String sql = "SELECT * FROM BOOK " +
-                "WHERE BOOK_TITLE LIKE ? OR BOOK_WRITER LIKE ? OR BOOK_GENRE LIKE ? " +
-                "ORDER BY BOOK_ID DESC";
-        String searchTag = "%" + keyword + "%";
-        return jdbcTemplate.query(sql, bookRowMapper, searchTag, searchTag, searchTag);
+        String sql = "SELECT * FROM BOOK " + KEYWORD_WHERE + "ORDER BY BOOK_ID DESC";
+        String searchTag = likeTag(keyword);
+        return jdbcTemplate.query(sql, bookRowMapper, searchTag, searchTag, searchTag, searchTag);
+    }
+
+    public List<Book> findByKeywordPaged(String keyword, int offset, int limit) {
+        String inner = "SELECT * FROM BOOK " + KEYWORD_WHERE + "ORDER BY BOOK_ID DESC";
+        return queryPaged(inner, offset, limit, likeTag(keyword), likeTag(keyword), likeTag(keyword), likeTag(keyword));
+    }
+
+    public int countByKeyword(String keyword) {
+        String sql = "SELECT COUNT(*) FROM BOOK " + KEYWORD_WHERE;
+        String searchTag = likeTag(keyword);
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class,
+                searchTag, searchTag, searchTag, searchTag);
+        return count != null ? count : 0;
     }
 
     // 도서 목록 조회
     public List<Book> findAll() {
         String sql = "SELECT * FROM BOOK ORDER BY BOOK_CREATED_AT DESC";
         return jdbcTemplate.query(sql, bookRowMapper);
+    }
+
+    public List<Book> findAllPaged(int offset, int limit) {
+        String inner = "SELECT * FROM BOOK ORDER BY BOOK_CREATED_AT DESC";
+        return queryPaged(inner, offset, limit);
+    }
+
+    private static String likeTag(String keyword) {
+        return "%" + keyword + "%";
+    }
+
+    private static final String BOOK_COLUMNS =
+            "BOOK_ID, BOOK_IMG, BOOK_TITLE, BOOK_WRITER, BOOK_COMPANY, BOOK_GENRE, BOOK_YEAR, "
+                    + "BOOK_ISBN, BOOK_PAGES, BOOK_STORY, BOOK_RATING, BOOK_CREATED_AT, BOOK_UPDATED_AT";
+
+    private List<Book> queryPaged(String orderedInnerSql, int offset, int limit, Object... innerArgs) {
+        int endRow = offset + limit;
+        String sql = "SELECT " + BOOK_COLUMNS + " FROM ("
+                + "  SELECT b.*, ROWNUM rn FROM ("
+                + orderedInnerSql
+                + "  ) b WHERE ROWNUM <= ?"
+                + ") WHERE rn > ?";
+        Object[] args = new Object[innerArgs.length + 2];
+        System.arraycopy(innerArgs, 0, args, 0, innerArgs.length);
+        args[innerArgs.length] = endRow;
+        args[innerArgs.length + 1] = offset;
+        return jdbcTemplate.query(sql, bookRowMapper, args);
     }
     // 도서 최신순 10개
     public List<Book> findRecentBooks() {
@@ -69,6 +110,24 @@ public class BookDao {
             return Optional.empty();
         }
     }
+    public boolean existsByIsbn(String isbn) {
+        if (isbn == null || isbn.isBlank()) {
+            return false;
+        }
+        String sql = "SELECT COUNT(*) FROM BOOK WHERE BOOK_ISBN = ?";
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, isbn.trim());
+        return count != null && count > 0;
+    }
+
+    public boolean existsByTitle(String title) {
+        if (title == null || title.isBlank()) {
+            return false;
+        }
+        String sql = "SELECT COUNT(*) FROM BOOK WHERE BOOK_TITLE = ?";
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, title.trim());
+        return count != null && count > 0;
+    }
+
     // 도서 저장  INSERT INTO
     public boolean save(Book book) {
         String sql = "INSERT INTO BOOK (" +
@@ -120,4 +179,3 @@ public class BookDao {
     }
 
 }
-

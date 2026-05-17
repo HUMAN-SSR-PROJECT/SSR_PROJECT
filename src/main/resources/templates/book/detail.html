@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="https://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/default}"
+      lang="ko">
+<head>
+    <title th:text="${book != null ? book.bookTitle + ' | DONGNAEBOOK' : '도서 상세'}">도서 상세</title>
+    <th:block layout:fragment="extra-head">
+        <link rel="stylesheet" th:href="@{/css/empty-state.css}">
+        <link rel="stylesheet" th:href="@{/css/book-detail.css}">
+        <script th:if="${kakaoMapConfigured}"
+                th:src="|https://dapi.kakao.com/v2/maps/sdk.js?appkey=${kakaoMapKey}&autoload=false|"
+                defer></script>
+    </th:block>
+</head>
+<body>
+<div layout:fragment="content"
+     class="book-detail"
+     th:if="${book != null}"
+     data-book-detail
+     th:attr="data-kakao-key=${kakaoMapKey}, data-focus-tab=${detailTab}">
+    <script type="application/json" id="book-detail-libraries-data" th:utext="${librariesJson}">[]</script>
+    <script type="application/json" id="book-review-edit-data" th:utext="${reviewsEditJson}">[]</script>
+
+    <p class="book-detail__alert book-detail__alert--error"
+       th:if="${!kakaoMapConfigured}">
+        카카오 지도 키가 없습니다. 프로젝트 루트 <code>.env</code>의 <code>KAKAO_MAP_JS_KEY</code>(JavaScript 키)를 넣고 앱을 완전히 재시작하세요.
+    </p>
+    <p class="book-detail__alert book-detail__alert--error"
+       th:if="${libraryError != null}"
+       th:text="${libraryError}">도서관 오류</p>
+    <p class="book-detail__alert book-detail__alert--error"
+       th:if="${reviewError != null}"
+       th:text="${reviewError}">리뷰 오류</p>
+
+    <section class="book-detail__hero">
+        <div class="book-detail__hero-inner">
+            <a class="book-detail__back" th:href="@{/book/search}">← 검색으로 돌아가기</a>
+
+            <div class="book-detail__summary">
+                <div class="book-detail__cover">
+                    <img th:if="${book.bookImg != null and !book.bookImg.isEmpty()}"
+                         th:src="${book.bookImg}"
+                         th:alt="${book.bookTitle}"
+                         loading="lazy">
+                    <div class="book-detail__cover-placeholder"
+                         th:if="${book.bookImg == null or book.bookImg.isEmpty()}"
+                         aria-hidden="true">
+                        <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                            <rect x="6" y="4" width="16" height="20" stroke="currentColor"/>
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="book-detail__meta">
+                    <span class="book-detail__genre"
+                          th:if="${book.bookGenre != null}"
+                          th:text="${book.bookGenre}">장르</span>
+                    <h1 class="book-detail__title" th:text="${book.bookTitle}">제목</h1>
+                    <p class="book-detail__sub">
+                        <span th:text="${book.bookWriter}">저자</span>
+                        <span class="sep" th:if="${book.bookCompany != null}">|</span>
+                        <span th:if="${book.bookCompany != null}" th:text="${book.bookCompany}">출판사</span>
+                        <span class="sep" th:if="${book.bookYear != null}">|</span>
+                        <span th:if="${book.bookYear != null}" th:text="${book.bookYear.year}">연도</span>
+                    </p>
+                    <p class="book-detail__isbn">
+                        ISBN <span th:text="${book.bookIsbn}">ISBN</span>
+                    </p>
+                    <div class="book-detail__rating" th:with="avg=${reviewAvg}">
+                        <span class="book-detail__stars" aria-hidden="true">
+                            <svg th:each="i : ${#numbers.sequence(1, 5)}"
+                                 width="14" height="14" viewBox="0 0 14 14"
+                                 th:classappend="${i <= T(java.lang.Math).round(avg)} ? ' is-filled' : ''">
+                                <path d="M7 1L8.8 5.2L13.4 5.6L10 8.6L11 13.2L7 10.8L3 13.2L4 8.6L0.6 5.6L5.2 5.2L7 1Z"
+                                      fill="currentColor"/>
+                            </svg>
+                        </span>
+                        <span class="book-detail__rating-score" th:text="${#numbers.formatDecimal(avg, 1, 1)}">0.0</span>
+                        <span class="book-detail__rating-count" th:text="'(' + ${reviewCount} + ')'">(0)</span>
+                    </div>
+
+                    <div class="book-detail__actions" sec:authorize="isAuthenticated()">
+                        <form th:if="${readingState != 3}"
+                              th:action="@{/book/detail/{id}/readbook(id=${book.bookId})}"
+                              method="post">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                            <th:block th:replace="~{fragments/book-detail-form :: library-codes}"></th:block>
+                            <button type="submit"
+                                    class="book-detail__btn"
+                                    th:classappend="${readingState == 2} ? ' book-detail__btn--active' : ''">
+                                <svg th:if="${readingState == 2}" class="book-detail__btn-icon" width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
+                                    <path d="M2 2.5H11V10.5H2V2.5Z" stroke="currentColor" stroke-width="1"/>
+                                    <path d="M4 4.5H9M4 6.5H9M4 8.5H7" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+                                </svg>
+                                <span th:text="${readingState == 2} ? '독서 기록 중' : '독서 기록 추가'">독서 기록 추가</span>
+                            </button>
+                        </form>
+                        <button th:if="${readingState == 3}"
+                                type="button"
+                                class="book-detail__btn book-detail__btn--active book-detail__btn--locked"
+                                disabled
+                                aria-disabled="true">
+                            <svg class="book-detail__btn-icon" width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
+                                <path d="M2.5 6.5L5.5 9.5L10.5 3.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <span>독서 기록 완료</span>
+                        </button>
+                        <form th:action="@{/book/detail/{id}/readSoon(id=${book.bookId})}" method="post">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                            <th:block th:replace="~{fragments/book-detail-form :: library-codes}"></th:block>
+                            <button type="submit"
+                                    class="book-detail__btn"
+                                    th:classappend="${readSoonSaved} ? ' book-detail__btn--active' : ''">
+                                <svg th:if="${readSoonSaved}" class="book-detail__btn-icon" width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
+                                    <path d="M3.5 2.5H9.5V11.5L6.5 9.5L3.5 11.5V2.5Z" stroke="currentColor" stroke-width="1" stroke-linejoin="round"/>
+                                </svg>
+                                <span th:text="${readSoonSaved} ? '즐겨찾기 완료' : '즐겨찾기 추가'">즐겨찾기 추가</span>
+                            </button>
+                        </form>
+                    </div>
+                    <div class="book-detail__actions" sec:authorize="!isAuthenticated()">
+                        <a class="book-detail__btn book-detail__btn--primary"
+                           th:href="@{/member/login(needLogin=true)}">로그인 후 기록하기</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="book-detail__tabs" role="tablist" aria-label="도서 상세 탭">
+                <button type="button" class="book-detail__tab is-active" role="tab"
+                        data-book-tab="info"
+                        aria-selected="true">책 정보</button>
+                <button type="button" class="book-detail__tab" role="tab"
+                        data-book-tab="libraries"
+                        aria-selected="false">
+                    보유 도서관 (<span th:text="${libraryCount}">0</span>)
+                </button>
+                <button type="button" class="book-detail__tab" role="tab"
+                        data-book-tab="reviews"
+                        aria-selected="false">
+                    리뷰 (<span th:text="${reviewCount}">0</span>)
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <div class="book-detail__body">
+        <!-- 책 정보 -->
+        <section class="book-detail__panel is-active"
+                 data-book-panel="info"
+                 role="tabpanel">
+            <p class="book-detail__section-label">DESCRIPTION</p>
+            <p class="book-detail__desc"
+               th:text="${book.bookStory != null and !book.bookStory.isBlank()} ? ${book.bookStory} : '소개글이 등록되지 않았습니다.'">
+                소개
+            </p>
+
+            <div class="book-detail__biblio">
+                <p class="book-detail__section-label">BIBLIOGRAPHIC INFO</p>
+                <div class="book-detail__biblio-table">
+                    <div class="book-detail__biblio-row">
+                        <div class="book-detail__biblio-field book-detail__biblio-field--shade">
+                            <span class="book-detail__biblio-label">저자</span>
+                            <span class="book-detail__biblio-value" th:text="${book.bookWriter}">저자</span>
+                        </div>
+                        <div class="book-detail__biblio-field">
+                            <span class="book-detail__biblio-label">출판사</span>
+                            <span class="book-detail__biblio-value"
+                                  th:text="${book.bookCompany != null ? book.bookCompany : '—'}">출판사</span>
+                        </div>
+                    </div>
+                    <div class="book-detail__biblio-row">
+                        <div class="book-detail__biblio-field book-detail__biblio-field--shade">
+                            <span class="book-detail__biblio-label">출판연도</span>
+                            <span class="book-detail__biblio-value"
+                                  th:text="${book.bookYear != null ? book.bookYear.year : '—'}">연도</span>
+                        </div>
+                        <div class="book-detail__biblio-field">
+                            <span class="book-detail__biblio-label">ISBN</span>
+                            <span class="book-detail__biblio-value" th:text="${book.bookIsbn}">ISBN</span>
+                        </div>
+                    </div>
+                    <div class="book-detail__biblio-row book-detail__biblio-row--last">
+                        <div class="book-detail__biblio-field book-detail__biblio-field--shade">
+                            <span class="book-detail__biblio-label">장르</span>
+                            <span class="book-detail__biblio-value"
+                                  th:text="${book.bookGenre != null ? book.bookGenre : '—'}">장르</span>
+                        </div>
+                        <div class="book-detail__biblio-field">
+                            <span class="book-detail__biblio-label">쪽수</span>
+                            <span class="book-detail__biblio-value"
+                                  th:text="${book.bookPages > 0 ? book.bookPages + 'p' : '—'}">쪽수</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 보유 도서관 -->
+        <section class="book-detail__panel"
+                 data-book-panel="libraries"
+                 role="tabpanel">
+            <div th:if="${libraryCount > 0}">
+                <div class="book-detail__lib-head">
+                    <p class="book-detail__section-label">HOLDING LIBRARIES</p>
+                    <h2 th:text="'보유 도서관 (총 ' + ${libraryCount} + '개)'">보유 도서관</h2>
+                </div>
+                <p th:if="${libraryApiWarning != null}"
+                   class="book-search__api-notice"
+                   role="alert"
+                   th:text="${libraryApiWarning}">API 안내</p>
+                <p th:if="${distanceHint != null and libraryApiWarning == null}"
+                   class="book-search__api-notice book-detail__distance-hint"
+                   th:text="${distanceHint}">거리 안내</p>
+                <div class="book-detail__lib-table">
+                    <div class="book-detail__lib-thead">
+                        <span>도서관명</span>
+                        <span>거리</span>
+                        <span>대출 가능 여부</span>
+                        <span>위치</span>
+                    </div>
+                    <div class="book-detail__lib-row-wrap"
+                         th:each="lib, stat : ${libraries}">
+                        <div class="book-detail__lib-row">
+                            <div>
+                                <p class="book-detail__lib-name" th:text="${lib.libraryName}">도서관</p>
+                                <p class="book-detail__lib-addr" th:text="${lib.libraryAddr}">주소</p>
+                            </div>
+                            <p class="book-detail__lib-distance"
+                               th:if="${lib.distanceLabel != null}"
+                               th:text="${lib.distanceLabel}">1.2km</p>
+                            <p class="book-detail__lib-distance"
+                               th:unless="${lib.distanceLabel != null}"
+                               th:attr="title=${distanceHint}"
+                               th:text="'—'">—</p>
+                            <p class="book-detail__lib-loan book-detail__lib-loan--ok"
+                               th:if="${lib.loanAvailable == true}">대출 가능</p>
+                            <p class="book-detail__lib-loan book-detail__lib-loan--no"
+                               th:if="${lib.loanAvailable == false}">대출 불가</p>
+                            <p class="book-detail__lib-loan"
+                               th:if="${lib.loanAvailable == null}">확인 불가</p>
+                            <button type="button"
+                                    class="book-detail__lib-map-btn"
+                                    data-map-toggle
+                                    th:attr="data-map-index=${stat.index}, aria-expanded='false'">
+                                <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true">
+                                    <path d="M5 1V9M1 5H9" stroke="currentColor"/>
+                                </svg>
+                                지도
+                                <svg class="chevron" width="9" height="9" viewBox="0 0 9 9" fill="none" aria-hidden="true">
+                                    <path d="M2 3.5L4.5 6L7 3.5" stroke="currentColor"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="book-detail__lib-map-panel"
+                             th:attr="data-map-panel=${stat.index}">
+                            <div class="book-detail__map-layout">
+                                <div class="book-detail__map-canvas" data-map-canvas></div>
+                                <aside class="book-detail__map-side">
+                                    <div>
+                                        <p class="book-detail__map-side-label">LOCATION</p>
+                                        <p class="book-detail__map-side-name" data-map-name th:text="${lib.libraryName}">도서관</p>
+                                        <p class="book-detail__map-side-addr">
+                                            <svg width="11" height="11" viewBox="0 0 11 11" fill="none" aria-hidden="true">
+                                                <circle cx="5.5" cy="5" r="2" stroke="currentColor"/>
+                                                <path d="M5.5 7V10" stroke="currentColor"/>
+                                            </svg>
+                                            <span data-map-addr th:text="${lib.libraryAddr}">주소</span>
+                                        </p>
+                                    </div>
+                                    <a class="book-detail__map-kakao-link"
+                                       data-map-kakao-link
+                                       th:if="${lib.libraryLat != null and lib.libraryLon != null}"
+                                       th:attr="href=${'https://map.kakao.com/link/map/' + lib.libraryName + ',' + lib.libraryLat + ',' + lib.libraryLon}"
+                                       target="_blank"
+                                       rel="noopener noreferrer">카카오맵으로 보기 ↗</a>
+                                </aside>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div th:if="${libraryCount == 0}">
+                <div th:replace="~{fragments/empty-state :: book-detail-libraries}"></div>
+            </div>
+        </section>
+
+        <!-- 리뷰 -->
+        <section class="book-detail__panel"
+                 data-book-panel="reviews"
+                 role="tabpanel">
+            <div th:if="${reviewCount > 0}">
+                <div class="book-detail__review-summary">
+                    <div>
+                        <p class="book-detail__review-score" th:text="${#numbers.formatDecimal(reviewAvg, 1, 1)}">4.6</p>
+                        <div class="book-detail__rating">
+                            <span class="book-detail__stars" aria-hidden="true">
+                                <svg th:each="i : ${#numbers.sequence(1, 5)}"
+                                     width="14" height="14" viewBox="0 0 14 14"
+                                     th:classappend="${i <= T(java.lang.Math).round(reviewAvg)} ? ' is-filled' : ''">
+                                    <path d="M7 1L8.8 5.2L13.4 5.6L10 8.6L11 13.2L7 10.8L3 13.2L4 8.6L0.6 5.6L5.2 5.2L7 1Z" fill="currentColor"/>
+                                </svg>
+                            </span>
+                            <span class="book-detail__rating-count" th:text="${reviewCount} + '개 리뷰'">0개 리뷰</span>
+                        </div>
+                    </div>
+                    <div class="book-detail__review-bars">
+                        <div class="book-detail__review-bar" th:each="bar : ${ratingBars}">
+                            <span th:text="${bar.star} + '점'">5점</span>
+                            <div class="book-detail__review-bar-track">
+                                <div class="book-detail__review-bar-fill"
+                                     th:style="'width:' + ${bar.percent} + '%'"></div>
+                            </div>
+                            <span th:text="${bar.percent} + '%'">0%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <article class="book-detail__review-item" th:each="item : ${reviews}">
+                    <div>
+                        <div class="book-detail__review-author">
+                            <span class="book-detail__review-avatar"
+                                  th:text="${item.memberNickname != null and !item.memberNickname.isEmpty() ? #strings.substring(item.memberNickname, 0, 1) : '?'}">김</span>
+                            <div>
+                                <p class="book-detail__review-nick" th:text="${item.memberNickname}">닉네임</p>
+                                <div class="book-detail__rating">
+                                    <span class="book-detail__stars" aria-hidden="true">
+                                        <svg th:each="i : ${#numbers.sequence(1, 5)}"
+                                             width="12" height="12" viewBox="0 0 14 14"
+                                             th:classappend="${i <= T(java.lang.Math).round(item.reviewRating)} ? ' is-filled' : ''">
+                                            <path d="M7 1L8.8 5.2L13.4 5.6L10 8.6L11 13.2L7 10.8L3 13.2L4 8.6L0.6 5.6L5.2 5.2L7 1Z" fill="currentColor"/>
+                                        </svg>
+                                    </span>
+                                    <span class="book-detail__review-date"
+                                          th:if="${item.reviewCreatedAt != null}"
+                                          th:text="${#temporals.format(item.reviewCreatedAt, 'yyyy.MM.dd')}">날짜</span>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="book-detail__review-text" th:text="${item.reviewComment}">리뷰</p>
+                    </div>
+                    <div class="book-detail__review-side">
+                        <form class="book-detail__like-form"
+                              th:action="@{/book/detail/like/{reviewId}(reviewId=${item.reviewId})}"
+                              method="post"
+                              sec:authorize="isAuthenticated()">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                            <input type="hidden" name="bookId" th:value="${book.bookId}">
+                            <th:block th:replace="~{fragments/book-detail-form :: library-codes}"></th:block>
+                            <button type="submit"
+                                    class="book-detail__like-btn"
+                                    th:classappend="${item.isLiked} ? ' is-liked' : ''">
+                                도움돼요 <span th:text="${item.likeCount}">0</span>
+                            </button>
+                        </form>
+                        <p class="book-detail__like-login"
+                           sec:authorize="!isAuthenticated()">
+                            <a th:href="@{/member/login(needLogin=true)}">로그인</a> 후 도움돼요를 누를 수 있습니다.
+                        </p>
+                        <div class="book-detail__review-manage"
+                             th:if="${isAdmin or (currentMemberId != null and currentMemberId == item.memberId)}">
+                            <button type="button"
+                                    class="book-detail__review-manage-btn"
+                                    data-review-edit
+                                    th:attr="data-review-id=${item.reviewId}">수정</button>
+                            <form th:if="${!isAdmin}"
+                                  th:action="@{/book/detail/delete/{reviewId}(reviewId=${item.reviewId})}"
+                                  method="post"
+                                  class="book-detail__review-delete-form"
+                                  onsubmit="return confirm('리뷰를 삭제할까요?');">
+                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                                <input type="hidden" name="bookId" th:value="${book.bookId}">
+                                <th:block th:replace="~{fragments/book-detail-form :: library-codes}"></th:block>
+                                <button type="submit" class="book-detail__review-manage-btn book-detail__review-manage-btn--danger">삭제</button>
+                            </form>
+                            <form th:if="${isAdmin}"
+                                  th:action="@{/book/detail/admin/delete/{reviewId}(reviewId=${item.reviewId})}"
+                                  method="post"
+                                  class="book-detail__review-delete-form"
+                                  onsubmit="return confirm('리뷰를 삭제할까요?');">
+                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                                <input type="hidden" name="bookId" th:value="${book.bookId}">
+                                <th:block th:replace="~{fragments/book-detail-form :: library-codes}"></th:block>
+                                <button type="submit" class="book-detail__review-manage-btn book-detail__review-manage-btn--danger">삭제</button>
+                            </form>
+                        </div>
+                    </div>
+                </article>
+            </div>
+
+            <div th:if="${reviewCount == 0}">
+                <div th:replace="~{fragments/empty-state :: book-detail-reviews}"></div>
+            </div>
+
+            <button type="button"
+                    class="book-detail__write-btn"
+                    data-review-open
+                    data-review-mode="create"
+                    sec:authorize="isAuthenticated()"
+                    th:if="${!myReview.isPresent()}">
+                리뷰 작성하기
+            </button>
+            <p class="book-detail__isbn"
+               sec:authorize="!isAuthenticated()"
+               style="text-align:center;margin-top:24px;">
+                <a th:href="@{/member/login(needLogin=true)}">로그인</a> 후 리뷰를 작성할 수 있습니다.
+            </p>
+        </section>
+    </div>
+
+    <div id="book-review-backdrop"
+         class="book-detail-modal-backdrop"
+         hidden
+         aria-hidden="true"></div>
+
+    <dialog class="book-detail-modal" id="book-review-modal" aria-labelledby="book-review-modal-title">
+    <div class="book-detail-modal__head">
+        <div>
+            <p class="book-detail-modal__eyebrow" id="book-review-modal-eyebrow">WRITE A REVIEW</p>
+            <h2 class="book-detail-modal__title" id="book-review-modal-title">리뷰 작성</h2>
+        </div>
+        <button type="button" class="book-detail-modal__close" data-review-close aria-label="닫기">×</button>
+    </div>
+    <form class="book-detail-modal__body"
+          id="book-review-form"
+          th:action="@{/book/detail/insert}"
+          th:attr="data-action-insert=@{/book/detail/insert}, data-action-update=@{/book/detail/update}"
+          method="post">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+        <input type="hidden" name="bookId" th:value="${book != null ? book.bookId : ''}">
+        <th:block th:replace="~{fragments/book-detail-form :: library-codes}"></th:block>
+        <input type="hidden" name="reviewId" id="review-id" value="">
+        <input type="hidden" name="rating" id="review-rating" value="0">
+
+        <label class="book-detail-modal__label">별점 <span class="req">*</span></label>
+        <div class="book-detail-modal__stars" role="group" aria-label="별점 선택">
+            <button type="button" class="book-detail-modal__star" data-review-star="1" aria-label="1점">
+                <svg width="26" height="26" viewBox="0 0 14 14"><path d="M7 1L8.8 5.2L13.4 5.6L10 8.6L11 13.2L7 10.8L3 13.2L4 8.6L0.6 5.6L5.2 5.2L7 1Z" fill="currentColor"/></svg>
+            </button>
+            <button type="button" class="book-detail-modal__star" data-review-star="2" aria-label="2점">
+                <svg width="26" height="26" viewBox="0 0 14 14"><path d="M7 1L8.8 5.2L13.4 5.6L10 8.6L11 13.2L7 10.8L3 13.2L4 8.6L0.6 5.6L5.2 5.2L7 1Z" fill="currentColor"/></svg>
+            </button>
+            <button type="button" class="book-detail-modal__star" data-review-star="3" aria-label="3점">
+                <svg width="26" height="26" viewBox="0 0 14 14"><path d="M7 1L8.8 5.2L13.4 5.6L10 8.6L11 13.2L7 10.8L3 13.2L4 8.6L0.6 5.6L5.2 5.2L7 1Z" fill="currentColor"/></svg>
+            </button>
+            <button type="button" class="book-detail-modal__star" data-review-star="4" aria-label="4점">
+                <svg width="26" height="26" viewBox="0 0 14 14"><path d="M7 1L8.8 5.2L13.4 5.6L10 8.6L11 13.2L7 10.8L3 13.2L4 8.6L0.6 5.6L5.2 5.2L7 1Z" fill="currentColor"/></svg>
+            </button>
+            <button type="button" class="book-detail-modal__star" data-review-star="5" aria-label="5점">
+                <svg width="26" height="26" viewBox="0 0 14 14"><path d="M7 1L8.8 5.2L13.4 5.6L10 8.6L11 13.2L7 10.8L3 13.2L4 8.6L0.6 5.6L5.2 5.2L7 1Z" fill="currentColor"/></svg>
+            </button>
+        </div>
+        <p class="book-detail-modal__hint">별점을 선택해 주세요</p>
+
+        <label class="book-detail-modal__label" for="review-comment">리뷰 내용 <span class="req">*</span></label>
+        <textarea id="review-comment"
+                  class="book-detail-modal__textarea"
+                  name="comment"
+                  placeholder="이 책에 대한 솔직한 리뷰를 남겨주세요. (최소 10자 이상)"
+                  required
+                  minlength="10"></textarea>
+        <p class="book-detail-modal__counter" data-review-counter>0자 / 최소 10자</p>
+
+        <div class="book-detail-modal__actions">
+            <button type="button" class="book-detail-modal__cancel" data-review-close>취소</button>
+            <button type="submit" class="book-detail-modal__submit" id="review-submit" disabled>리뷰 등록</button>
+        </div>
+    </form>
+</dialog>
+</div>
+
+<p class="book-detail__error" th:if="${book == null and bookError != null}" th:text="${bookError}">오류</p>
+<p class="book-detail__error" th:if="${book == null and bookError == null}">도서를 찾을 수 없습니다.</p>
+
+<th:block layout:fragment="extra-scripts">
+    <script th:src="@{/js/book-detail.js}"></script>
+</th:block>
+</body>
+</html>

@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 public class ReviewRes {
 
   public Long reviewId;
+  private Long memberId;
   private String reviewComment;
   private Double reviewRating;
   private LocalDateTime reviewCreatedAt;
