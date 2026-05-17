@@ -10,11 +10,14 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 
 import java.time.LocalDate;
 import java.util.Optional;
@@ -181,17 +184,48 @@ public class MemberController {
     }
 
     @PostMapping("/update")
-    public String updateProfile(MypageUpdateReq req, @AuthenticationPrincipal CustomUser customUser) {
+    public String updateProfile(
+            MypageUpdateReq req,
+            @AuthenticationPrincipal CustomUser customUser,
+            RedirectAttributes redirectAttributes) {
         if (customUser == null) {
             return "redirect:/member/login";
         }
 
-        memberService.updateProfile(customUser.getMemberId(), req);
+        Optional<String> error = memberService.updateProfile(customUser.getMemberId(), req);
+        if (error.isPresent()) {
+            redirectAttributes.addFlashAttribute("error", error.get());
+            return "redirect:/member/mypage?edit=true";
+        }
+        redirectAttributes.addFlashAttribute("success", "프로필을 저장했습니다.");
         return "redirect:/member/mypage";
     }
 
+    @PostMapping("/withdraw")
+    public String withdraw(
+            @AuthenticationPrincipal CustomUser customUser,
+            HttpServletRequest request,
+            HttpServletResponse response,
+            RedirectAttributes redirectAttributes) {
+        if (customUser == null) {
+            return "redirect:/member/login";
+        }
+
+        if (!memberService.withdrawMember(customUser.getMemberId())) {
+            redirectAttributes.addFlashAttribute("error", "회원 탈퇴에 실패했습니다.");
+            return "redirect:/member/mypage";
+        }
+
+        new SecurityContextLogoutHandler().logout(request, response, null);
+        redirectAttributes.addFlashAttribute("success", "회원 탈퇴가 완료되었습니다.");
+        return "redirect:/member/login";
+    }
+
     @GetMapping("/mypage")
-    public String mypageForm(@AuthenticationPrincipal CustomUser customUser, Model model) {
+    public String mypageForm(
+            @AuthenticationPrincipal CustomUser customUser,
+            @RequestParam(required = false, defaultValue = "false") boolean edit,
+            Model model) {
         if (customUser == null) {
             return "redirect:/member/login";
         }
@@ -201,6 +235,9 @@ public class MemberController {
         try {
             Members member = memberService.getMemberById(memberId);
             model.addAttribute("member", member);
+            model.addAttribute("editMode", edit);
+            model.addAttribute("avatarInitial", MemberService.avatarInitial(member));
+            model.addAttribute("mainClass", "site-main--fluid");
             return "member/mypage";
         } catch (Exception e) {
             model.addAttribute("error", "조회중 에러가 발생했습니다");

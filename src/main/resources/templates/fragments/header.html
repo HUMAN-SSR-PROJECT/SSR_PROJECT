@@ -33,8 +33,14 @@
                     aria-expanded="false"
                     aria-controls="profile-menu"
                     aria-haspopup="true">
-                <span class="profile__avatar"
-                      th:text="${#authentication.principal.nickname != null and !#strings.isEmpty(#authentication.principal.nickname) ? #strings.substring(#authentication.principal.nickname, 0, 1) : '?'}">김</span>
+                <span class="profile__avatar">
+                    <img th:if="${headerProfile.imgUrl != null}"
+                         th:src="${headerProfile.imgUrl}"
+                         alt=""
+                         class="profile__avatar-img">
+                    <span th:unless="${headerProfile.imgUrl != null}"
+                          th:text="${headerProfile.avatarInitial}">김</span>
+                </span>
                 <span class="profile__name" sec:authentication="principal.nickname">회원</span>
                 <span class="profile__chevron" aria-hidden="true">
                     <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">

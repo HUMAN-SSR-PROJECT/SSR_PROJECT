@@ -4,11 +4,308 @@
       layout:decorate="~{layout/default}"
       lang="ko">
 <head>
-    <title>읽은 책</title>
+    <title>내 서재</title>
+    <th:block layout:fragment="extra-head">
+        <link rel="stylesheet" th:href="@{/css/empty-state.css}">
+        <link rel="stylesheet" th:href="@{/css/mylib-readbook.css}">
+    </th:block>
 </head>
 <body>
-<div layout:fragment="content">
-    <h1 class="page-title">읽은 책</h1>
+<div layout:fragment="content"
+     class="mylib-readbook"
+     data-mylib-readbook
+     th:attr="data-initial-tab=${activeTab}">
+    <header class="mylib-readbook__hero">
+        <div class="mylib-readbook__hero-inner">
+            <p class="mylib-readbook__eyebrow">PERSONAL COLLECTION</p>
+            <div class="mylib-readbook__title-row">
+                <h1 class="mylib-readbook__title">나의 스마트 서재</h1>
+                <div class="mylib-readbook__summary" aria-label="서재 요약">
+                    <div class="mylib-readbook__summary-item">
+                        <span class="mylib-readbook__summary-num" th:text="${totalCount}">0</span>
+                        <span class="mylib-readbook__summary-label">전체</span>
+                    </div>
+                    <div class="mylib-readbook__summary-item">
+                        <span class="mylib-readbook__summary-num" th:text="${readingCount}">0</span>
+                        <span class="mylib-readbook__summary-label">읽는 중</span>
+                    </div>
+                    <div class="mylib-readbook__summary-item">
+                        <span class="mylib-readbook__summary-num" th:text="${finishedCount}">0</span>
+                        <span class="mylib-readbook__summary-label">완독</span>
+                    </div>
+                </div>
+            </div>
+            <div class="mylib-readbook__tabs" role="tablist" aria-label="내 서재 탭">
+                <button type="button"
+                        class="mylib-readbook__tab"
+                        role="tab"
+                        id="mylib-tab-reading"
+                        data-mylib-tab="reading"
+                        aria-controls="mylib-panel-reading"
+                        th:attr="aria-selected=${activeTab == 'reading'} ? 'true' : 'false'"
+                        th:classappend="${activeTab == 'reading'} ? ' is-active' : ''">
+                    <span class="mylib-readbook__tab-icon" aria-hidden="true">
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M3 2H11V12H3V2Z" stroke="currentColor" stroke-width="1"/>
+                            <path d="M5 5H9M5 7H9M5 9H7.5" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+                        </svg>
+                    </span>
+                    <span class="mylib-readbook__tab-label">읽는 중</span>
+                    <span class="mylib-readbook__tab-badge"
+                          th:classappend="${activeTab == 'reading'} ? ' is-active' : ''"
+                          th:text="${readingCount}">0</span>
+                </button>
+                <button type="button"
+                        class="mylib-readbook__tab"
+                        role="tab"
+                        id="mylib-tab-soon"
+                        data-mylib-tab="soon"
+                        aria-controls="mylib-panel-soon"
+                        th:attr="aria-selected=${activeTab == 'soon'} ? 'true' : 'false'"
+                        th:classappend="${activeTab == 'soon'} ? ' is-active' : ''">
+                    <span class="mylib-readbook__tab-icon" aria-hidden="true">
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M3 2H11V12H3V2Z" stroke="currentColor" stroke-width="1"/>
+                            <path d="M7 5V9M5 7H9" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+                        </svg>
+                    </span>
+                    <span class="mylib-readbook__tab-label">읽을 책</span>
+                    <span class="mylib-readbook__tab-badge"
+                          th:classappend="${activeTab == 'soon'} ? ' is-active' : ''"
+                          th:text="${soonCount}">0</span>
+                </button>
+                <button type="button"
+                        class="mylib-readbook__tab"
+                        role="tab"
+                        id="mylib-tab-finished"
+                        data-mylib-tab="finished"
+                        aria-controls="mylib-panel-finished"
+                        th:attr="aria-selected=${activeTab == 'finished'} ? 'true' : 'false'"
+                        th:classappend="${activeTab == 'finished'} ? ' is-active' : ''">
+                    <span class="mylib-readbook__tab-icon" aria-hidden="true">
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1"/>
+                            <path d="M4.5 7L6.2 8.7L9.5 5.3" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </span>
+                    <span class="mylib-readbook__tab-label">완독</span>
+                    <span class="mylib-readbook__tab-badge"
+                          th:classappend="${activeTab == 'finished'} ? ' is-active' : ''"
+                          th:text="${finishedCount}">0</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="mylib-readbook__body">
+        <section class="mylib-readbook__panel"
+                 id="mylib-panel-reading"
+                 role="tabpanel"
+                 aria-labelledby="mylib-tab-reading"
+                 data-mylib-panel="reading"
+                 th:classappend="${activeTab == 'reading'} ? ' is-active' : ''">
+            <div class="mylib-readbook__panel-head">
+                <p class="mylib-readbook__panel-count">
+                    <span class="mylib-readbook__panel-count-num" th:text="${readingCount}">0</span>
+                    <span class="mylib-readbook__panel-count-label">권의 책</span>
+                </p>
+                <p class="mylib-readbook__panel-tag">CURRENTLY READING</p>
+            </div>
+            <div th:if="${#lists.isEmpty(readingList)}" class="mylib-readbook__empty">
+                <div th:replace="~{fragments/empty-state :: mylib-reading}"></div>
+            </div>
+            <div th:if="${!#lists.isEmpty(readingList)}" class="mylib-readbook__grid">
+                <th:block th:each="book : ${readingList}"
+                          th:replace="~{fragments/mylib-book-card :: reading(${book})}"></th:block>
+            </div>
+        </section>
+
+        <section class="mylib-readbook__panel"
+                 id="mylib-panel-soon"
+                 role="tabpanel"
+                 aria-labelledby="mylib-tab-soon"
+                 data-mylib-panel="soon"
+                 th:classappend="${activeTab == 'soon'} ? ' is-active' : ''">
+            <div class="mylib-readbook__panel-head">
+                <p class="mylib-readbook__panel-count">
+                    <span class="mylib-readbook__panel-count-num" th:text="${soonCount}">0</span>
+                    <span class="mylib-readbook__panel-count-label">권의 책</span>
+                </p>
+                <p class="mylib-readbook__panel-tag">WANT TO READ</p>
+            </div>
+            <div th:if="${#lists.isEmpty(readSoonList)}" class="mylib-readbook__empty">
+                <div th:replace="~{fragments/empty-state :: mylib-wishlist}"></div>
+            </div>
+            <div th:if="${!#lists.isEmpty(readSoonList)}" class="mylib-readbook__grid mylib-readbook__grid--soon">
+                <th:block th:each="book : ${readSoonList}"
+                          th:replace="~{fragments/mylib-book-card :: wishlist(${book})}"></th:block>
+            </div>
+        </section>
+
+        <section class="mylib-readbook__panel"
+                 id="mylib-panel-finished"
+                 role="tabpanel"
+                 aria-labelledby="mylib-tab-finished"
+                 data-mylib-panel="finished"
+                 th:classappend="${activeTab == 'finished'} ? ' is-active' : ''">
+            <div class="mylib-readbook__panel-head">
+                <p class="mylib-readbook__panel-count">
+                    <span class="mylib-readbook__panel-count-num" th:text="${finishedCount}">0</span>
+                    <span class="mylib-readbook__panel-count-label">권의 책</span>
+                </p>
+                <p class="mylib-readbook__panel-tag">FINISHED</p>
+            </div>
+            <div th:if="${#lists.isEmpty(readedList)}" class="mylib-readbook__empty">
+                <div th:replace="~{fragments/empty-state :: mylib-completed}"></div>
+            </div>
+            <div th:if="${!#lists.isEmpty(readedList)}" class="mylib-readbook__grid mylib-readbook__grid--finished">
+                <th:block th:each="book : ${readedList}"
+                          th:replace="~{fragments/mylib-book-card :: completed(${book})}"></th:block>
+            </div>
+        </section>
+    </div>
+
+    <div class="mylib-dialog-backdrop"
+         id="mylib-dialog-backdrop"
+         hidden
+         aria-hidden="true"></div>
+
+    <dialog class="mylib-reading-modal"
+            id="mylib-reading-modal"
+            aria-labelledby="mylib-reading-modal-title">
+        <div class="mylib-reading-modal__head">
+            <p class="mylib-reading-modal__eyebrow">STATUS CHANGE</p>
+            <div class="mylib-reading-modal__book">
+                <div class="mylib-reading-modal__book-cover" id="mylib-reading-cover">
+                    <img id="mylib-reading-cover-img" src="" alt="" hidden>
+                    <svg id="mylib-reading-cover-fallback" width="20" height="20" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                        <rect x="2" y="1" width="10" height="12" stroke="#bcbbb5" stroke-width="1"/>
+                    </svg>
+                </div>
+                <div class="mylib-reading-modal__book-meta">
+                    <p class="mylib-reading-modal__book-title" id="mylib-reading-book-title">제목</p>
+                    <p class="mylib-reading-modal__book-writer" id="mylib-reading-book-writer">저자</p>
+                    <span class="mylib-reading-modal__book-genre" id="mylib-reading-book-genre" hidden></span>
+                </div>
+            </div>
+        </div>
+        <div class="mylib-reading-modal__body">
+            <p class="mylib-reading-modal__question" id="mylib-reading-modal-title">읽는 중으로 이동하시겠습니까?</p>
+            <p class="mylib-reading-modal__desc" id="mylib-reading-modal-desc">
+                이 책을 <strong>읽을 책</strong>에 두고 <strong>읽는 중</strong>에 추가합니다.
+            </p>
+        </div>
+        <form id="mylib-reading-form" method="post" th:action="@{/mylib/readbook/0/reading-from-soon}">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+        </form>
+        <div class="mylib-reading-modal__foot">
+            <button type="button" class="mylib-reading-modal__cancel" data-mylib-reading-close>취소</button>
+            <button type="submit" class="mylib-reading-modal__confirm" form="mylib-reading-form">확인</button>
+        </div>
+    </dialog>
+
+    <dialog class="mylib-finish-modal"
+            id="mylib-finish-modal"
+            aria-labelledby="mylib-finish-modal-title">
+        <div class="mylib-finish-modal__head">
+            <div class="mylib-finish-modal__head-title">
+                <span class="mylib-finish-modal__head-icon" aria-hidden="true">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M2 11V3.5L7 1.5L12 3.5V11L7 13L2 11Z" stroke="currentColor" stroke-width="1"/>
+                        <path d="M5 5.5H9M5 7.5H9" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+                    </svg>
+                </span>
+                <h2 class="mylib-finish-modal__title" id="mylib-finish-modal-title">완독 기록 이동</h2>
+            </div>
+            <button type="button"
+                    class="mylib-finish-modal__close"
+                    data-mylib-finish-close
+                    aria-label="닫기">×</button>
+        </div>
+        <form class="mylib-finish-modal__body"
+              id="mylib-finish-form"
+              th:action="@{/mylib/readbook/readed}"
+              method="post">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <input type="hidden" name="bookId" id="mylib-finish-book-id" value="">
+            <input type="hidden" name="returnTab" id="mylib-finish-return-tab" value="reading">
+            <input type="hidden" name="bookRating" id="mylib-finish-rating" value="0">
+            <input type="hidden" name="endDate" id="mylib-finish-end-datetime" value="">
+
+            <div class="mylib-finish-modal__book">
+                <div class="mylib-finish-modal__book-cover" id="mylib-finish-cover">
+                    <img id="mylib-finish-cover-img" src="" alt="" hidden>
+                    <svg id="mylib-finish-cover-fallback" width="20" height="20" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                        <rect x="2" y="1" width="10" height="12" stroke="#bcbbb5" stroke-width="1"/>
+                    </svg>
+                </div>
+                <div class="mylib-finish-modal__book-meta">
+                    <p class="mylib-finish-modal__book-title" id="mylib-finish-book-title">제목</p>
+                    <p class="mylib-finish-modal__book-writer" id="mylib-finish-book-writer">저자</p>
+                    <span class="mylib-finish-modal__book-genre" id="mylib-finish-book-genre" hidden></span>
+                </div>
+            </div>
+
+            <div class="mylib-finish-modal__field">
+                <label class="mylib-finish-modal__label">별점</label>
+                <div class="mylib-finish-modal__stars-row">
+                    <div class="mylib-finish-modal__stars" role="group" aria-label="별점 선택">
+                        <button type="button" class="mylib-finish-modal__star" data-finish-star="1" aria-label="1점">
+                            <svg width="28" height="28" viewBox="0 0 14 14"><path d="M7 1L8.8 5.2L13.4 5.6L10 8.6L11 13.2L7 10.8L3 13.2L4 8.6L0.6 5.6L5.2 5.2L7 1Z" fill="currentColor"/></svg>
+                        </button>
+                        <button type="button" class="mylib-finish-modal__star" data-finish-star="2" aria-label="2점">
+                            <svg width="28" height="28" viewBox="0 0 14 14"><path d="M7 1L8.8 5.2L13.4 5.6L10 8.6L11 13.2L7 10.8L3 13.2L4 8.6L0.6 5.6L5.2 5.2L7 1Z" fill="currentColor"/></svg>
+                        </button>
+                        <button type="button" class="mylib-finish-modal__star" data-finish-star="3" aria-label="3점">
+                            <svg width="28" height="28" viewBox="0 0 14 14"><path d="M7 1L8.8 5.2L13.4 5.6L10 8.6L11 13.2L7 10.8L3 13.2L4 8.6L0.6 5.6L5.2 5.2L7 1Z" fill="currentColor"/></svg>
+                        </button>
+                        <button type="button" class="mylib-finish-modal__star" data-finish-star="4" aria-label="4점">
+                            <svg width="28" height="28" viewBox="0 0 14 14"><path d="M7 1L8.8 5.2L13.4 5.6L10 8.6L11 13.2L7 10.8L3 13.2L4 8.6L0.6 5.6L5.2 5.2L7 1Z" fill="currentColor"/></svg>
+                        </button>
+                        <button type="button" class="mylib-finish-modal__star" data-finish-star="5" aria-label="5점">
+                            <svg width="28" height="28" viewBox="0 0 14 14"><path d="M7 1L8.8 5.2L13.4 5.6L10 8.6L11 13.2L7 10.8L3 13.2L4 8.6L0.6 5.6L5.2 5.2L7 1Z" fill="currentColor"/></svg>
+                        </button>
+                    </div>
+                    <p class="mylib-finish-modal__stars-value" id="mylib-finish-stars-value">0.0 / 5.0</p>
+                </div>
+            </div>
+
+            <div class="mylib-finish-modal__field">
+                <label class="mylib-finish-modal__label" for="mylib-finish-end-date">완독일</label>
+                <input type="date"
+                       class="mylib-finish-modal__input"
+                       id="mylib-finish-end-date"
+                       required>
+            </div>
+
+            <div class="mylib-finish-modal__field">
+                <label class="mylib-finish-modal__label" for="mylib-finish-memo">독서 메모</label>
+                <textarea class="mylib-finish-modal__textarea"
+                          id="mylib-finish-memo"
+                          name="memo"
+                          placeholder="기억하고 싶은 내용을 적어보세요."
+                          rows="6"></textarea>
+            </div>
+        </form>
+        <div class="mylib-finish-modal__foot">
+            <button type="button" class="mylib-finish-modal__cancel" data-mylib-finish-close>취소</button>
+            <button type="submit"
+                    class="mylib-finish-modal__submit"
+                    form="mylib-finish-form"
+                    id="mylib-finish-submit"
+                    disabled>
+                <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
+                    <path d="M2.5 6.5L5 9L10.5 3.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M7.5 6.5L10 9" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                저장하기
+            </button>
+        </div>
+    </dialog>
 </div>
+
+<th:block layout:fragment="extra-scripts">
+    <script th:src="@{/js/mylib-readbook.js}"></script>
+</th:block>
 </body>
 </html>

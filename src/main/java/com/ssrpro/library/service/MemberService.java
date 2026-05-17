@@ -99,38 +99,80 @@ public class MemberService {
 
         return memberDao.findPw(req);
     }
-    // 마이페이지 수정
-    public boolean updateProfile(Long memberId, MypageUpdateReq req) {
-        String imageUrl = null;
+    // 마이페이지 수정 — 실패 시 메시지
+    public Optional<String> updateProfile(Long memberId, MypageUpdateReq req) {
+        if (req == null) {
+            return Optional.of("요청 정보가 없습니다.");
+        }
+        String nickname = req.getNickname() == null ? "" : req.getNickname().trim();
+        if (nickname.isBlank()) {
+            return Optional.of("닉네임을 입력해 주세요.");
+        }
+        if (memberDao.existsByNicknameExcept(memberId, nickname)) {
+            return Optional.of("이미 사용 중인 닉네임입니다.");
+        }
 
-        // 1. 이미지가 첨부되었는지 확인
-        if (req.getImgUrl() != null && !req.getImgUrl().isEmpty()) {
-            MultipartFile file = req.getImgUrl();
+        Members existing = getMemberById(memberId);
+        String imageUrl = existing.getImgUrl();
 
-            // 파일명 생성 (중복 방지를 위해 memberId와 타임스탬프 조합)
-            String fileName = "profile/" + memberId + "_" + System.currentTimeMillis() + "_" + file.getOriginalFilename();
+        MultipartFile file = req.getImgUrl();
+        if (file != null && !file.isEmpty()) {
+            String fileName =
+                "profile/"
+                    + memberId
+                    + "_"
+                    + System.currentTimeMillis()
+                    + "_"
+                    + file.getOriginalFilename();
 
             try {
-                // 2. Firebase Storage에 파일 업로드
                 storageBucket.create(fileName, file.getBytes(), file.getContentType());
             } catch (IOException e) {
-                throw new IllegalStateException("프로필 이미지 업로드에 실패했습니다.", e);
+                return Optional.of("프로필 이미지 업로드에 실패했습니다.");
             }
 
-            // 3. 업로드된 파일의 공용 URL 생성 (고정 형식)
-            imageUrl = String.format("https://firebasestorage.googleapis.com/v0/b/%s/o/%s?alt=media",
-                    bucketName, fileName.replace("/", "%2F"));
+            imageUrl =
+                String.format(
+                    "https://firebasestorage.googleapis.com/v0/b/%s/o/%s?alt=media",
+                    bucketName,
+                    fileName.replace("/", "%2F"));
         }
 
-        // 4. 엔티티 변환 (imageUrl 포함)
         Members member = req.toEntity(memberId);
-        if (imageUrl != null) {
-            member.setImgUrl(imageUrl); // 엔티티에 사진 URL 세팅
-        }
+        member.setNickname(nickname);
+        member.setImgUrl(imageUrl);
+        member.setIntro(trimToNull(req.getIntro()));
+        member.setAddr(trimToNull(req.getAddr()));
 
-        // 5. DB 업데이트
         int result = memberDao.updateMemberProfile(member);
-        return result > 0;
+        return result > 0 ? Optional.empty() : Optional.of("프로필 저장에 실패했습니다.");
+    }
+
+    public boolean withdrawMember(Long memberId) {
+        return memberDao.deleteMember(memberId) > 0;
+    }
+
+    private static String trimToNull(String value) {
+        if (value == null) {
+            return null;
+        }
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? null : trimmed;
+    }
+
+    /** 아바타 이니셜 (이미지 없을 때) */
+    public static String avatarInitial(Members member) {
+        if (member == null) {
+            return "?";
+        }
+        String source = member.getNickname();
+        if (source == null || source.isBlank()) {
+            source = member.getName();
+        }
+        if (source == null || source.isBlank()) {
+            return "?";
+        }
+        return source.substring(0, 1).toUpperCase();
     }
 
     // 마이페이지 조회를 위한 회원 정보 획득

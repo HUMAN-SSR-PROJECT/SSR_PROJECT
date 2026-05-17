@@ -25,6 +25,8 @@ public class ReadSoonRes {
   private String bookTitle;
   private String bookWriter;
   private Double bookRating;
+  /** UI용: 1 없음, 2 읽는 중, 3 완독 */
+  private Integer readingState;
 
   public static ReadSoonRes of(ReadSoon readSoon, Book book) {
     return ReadSoonRes.builder()

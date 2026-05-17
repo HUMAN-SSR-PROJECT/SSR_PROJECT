@@ -80,6 +80,17 @@ public class MemberDao {
         return count != null && count > 0;
     }
 
+    /** 마이페이지 수정 — 본인 제외 닉네임 중복 */
+    public boolean existsByNicknameExcept(Long memberId, String nickname) {
+        if (nickname == null || nickname.isBlank() || memberId == null) {
+            return false;
+        }
+        String sql = "SELECT COUNT(*) FROM MEMBERS WHERE MEMBER_NICKNAME = ? AND MEMBER_ID <> ?";
+        Integer count =
+            jdbcTemplate.queryForObject(sql, Integer.class, nickname.trim(), memberId);
+        return count != null && count > 0;
+    }
+
     // 마이페이지 수정
     public int updateMemberProfile(Members member) {
         String sql = "UPDATE MEMBERS SET MEMBER_NICKNAME = ?, MEMBER_IMGURL = ?, " +

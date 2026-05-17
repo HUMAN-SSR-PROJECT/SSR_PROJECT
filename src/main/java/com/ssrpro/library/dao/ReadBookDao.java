@@ -147,7 +147,7 @@ public class ReadBookDao {
     String sql = """
         SELECT rb.book_id, b.book_img, b.book_genre, b.book_title, 
                b.book_writer, rb.read_book_rating, 
-               rb.read_book_end 
+               rb.read_book_end, rb.read_book_memo 
         FROM read_book rb 
         JOIN book b 
         ON rb.book_id = b.book_id 
@@ -163,6 +163,7 @@ public class ReadBookDao {
       readBookRes.setBookWriter(rs.getString("book_writer"));
       readBookRes.setReadBookRating(rs.getDouble("read_book_rating"));
       readBookRes.setReadBookEnd(rs.getTimestamp("read_book_end").toLocalDateTime());
+      readBookRes.setReadBookMemo(rs.getString("read_book_memo"));
       return readBookRes;
     }, memberId);
   }

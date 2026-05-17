@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<article class="mylib-card mylib-card--reading"
+         th:fragment="reading(book)"
+         th:attr="data-book-id=${book.bookId},
+                  data-book-title=${book.bookTitle},
+                  data-book-writer=${book.bookWriter},
+                  data-book-genre=${book.bookGenre},
+                  data-book-img=${book.bookImg},
+                  data-read-rating=${book.readBookRating != null ? book.readBookRating : 0}">
+    <div class="mylib-card__cover-wrap">
+        <div class="mylib-card__cover">
+            <img th:if="${book.bookImg != null and !book.bookImg.isEmpty()}"
+                 th:src="${book.bookImg}"
+                 th:alt="${book.bookTitle}"
+                 loading="lazy">
+            <svg th:if="${book.bookImg == null or book.bookImg.isEmpty()}"
+                 width="28" height="28" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                <rect x="2" y="1" width="10" height="12" stroke="#bcbbb5" stroke-width="1"/>
+            </svg>
+            <span class="mylib-card__genre"
+                  th:if="${book.bookGenre != null and !book.bookGenre.isEmpty()}"
+                  th:text="${book.bookGenre}">장르</span>
+            <div class="mylib-card__cover-overlay">
+                <button type="button"
+                        class="mylib-card__action-btn"
+                        data-mylib-open-finish
+                        th:attr="aria-label=${book.bookTitle + ' 완독 처리'}">
+                    <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
+                        <path d="M2.5 6.5L5 9L10.5 3.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <span>완독</span>
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="mylib-card__body">
+        <h3 class="mylib-card__title" th:text="${book.bookTitle}">제목</h3>
+        <p class="mylib-card__author" th:text="${book.bookWriter}">저자</p>
+        <div class="mylib-card__footer">
+            <th:block th:replace="~{fragments/mylib-stars :: rating(rating=${book.readBookRating != null ? book.readBookRating : 0})}"></th:block>
+        </div>
+    </div>
+</article>
+
+<article class="mylib-card mylib-card--soon"
+         th:fragment="wishlist(book)"
+         th:attr="data-book-id=${book.bookId},
+                  data-book-title=${book.bookTitle},
+                  data-book-writer=${book.bookWriter},
+                  data-book-genre=${book.bookGenre},
+                  data-book-img=${book.bookImg},
+                  data-reading-state=${book.readingState != null ? book.readingState : 1}">
+    <div class="mylib-card__cover-wrap">
+        <div class="mylib-card__cover">
+            <img th:if="${book.bookImg != null and !book.bookImg.isEmpty()}"
+                 th:src="${book.bookImg}"
+                 th:alt="${book.bookTitle}"
+                 loading="lazy">
+            <svg th:if="${book.bookImg == null or book.bookImg.isEmpty()}"
+                 width="28" height="28" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                <rect x="2" y="1" width="10" height="12" stroke="#bcbbb5" stroke-width="1"/>
+            </svg>
+            <span class="mylib-card__genre"
+                  th:if="${book.bookGenre != null and !book.bookGenre.isEmpty()}"
+                  th:text="${book.bookGenre}">장르</span>
+            <div class="mylib-card__cover-overlay"
+                 th:if="${book.readingState == null or book.readingState != 3}">
+                <button type="button"
+                        class="mylib-card__action-btn mylib-card__action-btn--reading"
+                        data-mylib-open-reading
+                        th:attr="aria-label=${book.bookTitle + ' 읽는 중으로 이동'}">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                        <path d="M3 2H11V12H3V2Z" stroke="currentColor" stroke-width="1"/>
+                        <path d="M5 5H9M5 7H9M5 9H7.5" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+                    </svg>
+                    <span>읽는 중으로</span>
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="mylib-card__body">
+        <h3 class="mylib-card__title" th:text="${book.bookTitle}">제목</h3>
+        <p class="mylib-card__author" th:text="${book.bookWriter}">저자</p>
+        <div class="mylib-card__footer mylib-card__footer--rate">
+            <th:block th:replace="~{fragments/mylib-stars :: rating(rating=0)}"></th:block>
+            <span class="mylib-card__rate-label">평가하기</span>
+        </div>
+    </div>
+</article>
+
+<article class="mylib-card mylib-card--finished"
+         th:fragment="completed(book)"
+         th:attr="data-book-id=${book.bookId},
+                  data-book-title=${book.bookTitle},
+                  data-book-writer=${book.bookWriter},
+                  data-book-genre=${book.bookGenre},
+                  data-book-img=${book.bookImg},
+                  data-read-rating=${book.readBookRating != null ? book.readBookRating : 0},
+                  data-read-end=${book.readBookEnd != null ? #temporals.format(book.readBookEnd, 'yyyy-MM-dd') : ''}">
+    <span class="mylib-card__memo-src" hidden th:if="${book.readBookMemo != null}" th:text="${book.readBookMemo}"></span>
+    <div class="mylib-card__cover-wrap">
+        <div class="mylib-card__cover">
+            <img th:if="${book.bookImg != null and !book.bookImg.isEmpty()}"
+                 th:src="${book.bookImg}"
+                 th:alt="${book.bookTitle}"
+                 loading="lazy">
+            <svg th:if="${book.bookImg == null or book.bookImg.isEmpty()}"
+                 width="28" height="28" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                <rect x="2" y="1" width="10" height="12" stroke="#bcbbb5" stroke-width="1"/>
+            </svg>
+            <span class="mylib-card__genre"
+                  th:if="${book.bookGenre != null and !book.bookGenre.isEmpty()}"
+                  th:text="${book.bookGenre}">장르</span>
+            <div class="mylib-card__cover-overlay">
+                <button type="button"
+                        class="mylib-card__action-btn mylib-card__action-btn--view"
+                        data-mylib-open-finish-edit
+                        th:attr="aria-label=${book.bookTitle + ' 완독 기록 보기'}">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                        <path d="M2 7C2 4.5 4.5 2 7 2C9.5 2 12 4.5 12 7C12 9.5 9.5 12 7 12C4.5 12 2 9.5 2 7Z" stroke="currentColor" stroke-width="1"/>
+                        <circle cx="7" cy="7" r="2" stroke="currentColor" stroke-width="1"/>
+                    </svg>
+                    <span>보기</span>
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="mylib-card__body mylib-card__body--finished">
+        <p class="mylib-card__finished-date"
+           th:if="${book.readBookEnd != null}"
+           th:text="${'완독 ' + #temporals.format(book.readBookEnd, 'yyyy.MM.dd')}">완독 2025.04.12</p>
+        <h3 class="mylib-card__title" th:text="${book.bookTitle}">제목</h3>
+        <p class="mylib-card__author" th:text="${book.bookWriter}">저자</p>
+        <div class="mylib-card__footer">
+            <th:block th:replace="~{fragments/mylib-stars :: rating(rating=${book.readBookRating != null ? book.readBookRating : 0})}"></th:block>
+        </div>
+    </div>
+</article>
+
+</body>
+</html>

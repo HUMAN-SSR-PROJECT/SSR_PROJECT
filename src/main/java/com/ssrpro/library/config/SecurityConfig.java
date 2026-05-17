@@ -24,7 +24,12 @@ public class SecurityConfig {
                         // /admin으로 시작하면 관리자만
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         // 마이페이지는 로그인만 하면 ok
-                        .requestMatchers("/member/mypage", "/member/update", "/mylib/**").authenticated()
+                        .requestMatchers(
+                                "/member/mypage",
+                                "/member/update",
+                                "/member/withdraw",
+                                "/mylib/**")
+                        .authenticated()
                         // 도서 상세 — 로그인 필요 액션
                         .requestMatchers(HttpMethod.POST,
                                 "/book/detail/*/readbook",
