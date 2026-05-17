@@ -6,6 +6,7 @@ import com.ssrpro.library.dto.security.CustomUser;
 import com.ssrpro.library.service.MemberService;
 import com.ssrpro.library.support.BirthDateUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -27,14 +28,55 @@ public class MemberController {
     @PostMapping("/join")
     public String join(SignUpReq req, RedirectAttributes redirectAttributes) {
         if (req.getBirth() == null) {
+            flashJoinForm(req, redirectAttributes);
             redirectAttributes.addFlashAttribute("error", "생년월일 형식이 올바르지 않습니다. (예: 19970701)");
             return "redirect:/member/join";
         }
-        if (!memberService.join(req)) {
-            redirectAttributes.addFlashAttribute("error", "회원가입에 실패했습니다. 입력 정보를 확인해 주세요.");
+        try {
+            Optional<String> joinError = memberService.join(req);
+            if (joinError.isPresent()) {
+                flashJoinForm(req, redirectAttributes);
+                String message = joinError.get();
+                redirectAttributes.addFlashAttribute("error", message);
+                if (message.contains("닉네임")) {
+                    redirectAttributes.addFlashAttribute("nicknameDuplicate", true);
+                }
+                if (message.contains("이메일")) {
+                    redirectAttributes.addFlashAttribute("emailDuplicate", true);
+                }
+                return "redirect:/member/join";
+            }
+        } catch (DuplicateKeyException e) {
+            flashJoinForm(req, redirectAttributes);
+            redirectAttributes.addFlashAttribute("error", "이미 사용 중인 이메일 또는 닉네임입니다.");
             return "redirect:/member/join";
         }
+        redirectAttributes.addFlashAttribute("success", "회원가입이 완료되었습니다. 로그인해 주세요.");
         return "redirect:/member/login";
+    }
+
+    /** 가입 실패 시 입력값을 flash로 되돌립니다 (비밀번호 제외). */
+    private void flashJoinForm(SignUpReq req, RedirectAttributes redirectAttributes) {
+        if (req == null) {
+            return;
+        }
+        SignUpReq joinForm = SignUpReq.builder()
+                .email(trim(req.getEmail()))
+                .name(trim(req.getName()))
+                .nickname(trim(req.getNickname()))
+                .birth(req.getBirth())
+                .build();
+        redirectAttributes.addFlashAttribute("joinForm", joinForm);
+
+        if (joinForm.getEmail() != null && !joinForm.getEmail().isBlank()) {
+            redirectAttributes.addFlashAttribute("emailCheckValue", joinForm.getEmail());
+            String emailCheck = memberService.existsByEmail(joinForm.getEmail()) ? "duplicate" : "available";
+            redirectAttributes.addFlashAttribute("emailCheck", emailCheck);
+        }
+    }
+
+    private static String trim(String value) {
+        return value == null ? null : value.trim();
     }
 
     @GetMapping("/join")

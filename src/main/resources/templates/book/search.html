@@ -156,9 +156,15 @@
                 </p>
             </div>
             <div class="book-search__list">
-                <a class="book-search__item"
-                   th:each="book, stat : ${searchResults}"
-                   th:href="@{/book/detail/{id}(id=${book.bookId})}">
+                <form class="book-search__item book-search__item-form"
+                      th:each="book, stat : ${searchResults}"
+                      th:action="@{/book/detail/{id}(id=${book.bookId})}"
+                      method="post">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                    <input type="hidden"
+                           th:each="code : ${book.libraryCodes}"
+                           name="libraryCodes"
+                           th:value="${code}">
                     <div class="book-search__item-index" th:text="${stat.count < 10 ? '0' + stat.count : stat.count}">01</div>
                     <div class="book-search__item-main">
                         <div class="book-search__item-cover">
@@ -199,7 +205,7 @@
                         <p class="book-search__holdings"
                            th:if="${book.libraryCodes == null or book.libraryCodes.isEmpty()}">0개 도서관 소장</p>
                     </div>
-                </a>
+                </form>
             </div>
             <p class="book-search__footnote">* 도서를 클릭하면 도서관별 대출 현황을 확인할 수 있습니다.</p>
         </div>

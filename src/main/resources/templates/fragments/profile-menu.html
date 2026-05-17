@@ -8,8 +8,7 @@
      data-profile-menu
      hidden>
     <div class="profile-menu__head">
-        <p class="profile-menu__handle"
-           th:text="${'@' + #strings.substringBefore(principal.email, '@')}">@reader</p>
+        <p class="profile-menu__handle">@<span sec:authentication="principal.name">reader</span></p>
         <p class="profile-menu__name" sec:authentication="principal.nickname">회원</p>
     </div>
 

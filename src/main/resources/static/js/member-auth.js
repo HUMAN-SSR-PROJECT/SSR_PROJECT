@@ -31,9 +31,17 @@
         );
     }
 
+    function fieldWrap(field) {
+        return field.closest('.auth__field');
+    }
+
     function showFieldError(field, message) {
-        field.classList.add('is-invalid');
-        var existing = field.parentElement.querySelector('.auth__field-error');
+        var wrap = fieldWrap(field);
+        if (!wrap) {
+            return;
+        }
+        wrap.classList.add('is-invalid');
+        var existing = wrap.querySelector('.auth__field-error');
         if (existing) {
             existing.textContent = message;
             return;
@@ -42,7 +50,7 @@
         error.className = 'auth__field-error';
         error.setAttribute('role', 'alert');
         error.textContent = message;
-        field.parentElement.appendChild(error);
+        wrap.appendChild(error);
     }
 
     function clearFieldError(field) {
@@ -181,8 +189,29 @@
             bindBirthInput(birthInput);
         }
 
+        var emailInput = form.querySelector('input[name="email"]');
+        var checkBtn = form.querySelector('.auth__btn-check');
+
+        if (emailInput) {
+            emailInput.addEventListener('input', function () {
+                form.dataset.emailVerified = 'false';
+                if (checkBtn) {
+                    checkBtn.classList.remove('is-available', 'is-duplicate');
+                }
+            });
+        }
+
         form.addEventListener('submit', function (event) {
             var email = form.querySelector('input[name="email"]');
+            var submitter = event.submitter;
+
+            if (submitter && submitter.classList.contains('auth__btn-check')) {
+                if (!validateEmailInput(email)) {
+                    event.preventDefault();
+                }
+                return;
+            }
+
             var name = form.querySelector('input[name="name"]');
             var nickname = form.querySelector('input[name="nickname"]');
             var valid =
@@ -206,7 +235,6 @@
             }
 
             if (form.dataset.emailVerified !== 'true') {
-                event.preventDefault();
                 showFieldError(email, '이메일 중복 확인을 해 주세요.');
                 valid = false;
             }

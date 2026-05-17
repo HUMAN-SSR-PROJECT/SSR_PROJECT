@@ -31,29 +31,51 @@ public class MemberService {
         return memberDao.existsByEmail(email.trim());
     }
 
-    // 회원가입
-    public boolean join(SignUpReq req) {
-        // 1. 이메일 중복 체크 (null 및 trim 처리 포함)
-        if (req.getEmail() == null || memberDao.existsByEmail(req.getEmail().trim())) {
+    public boolean existsByNickname(String nickname) {
+        if (nickname == null || nickname.isBlank()) {
             return false;
         }
+        return memberDao.existsByNickname(nickname.trim());
+    }
 
-        // 2. 비밀번호 유효성 체크
+    /**
+     * 회원가입. 성공 시 empty, 실패 시 사용자에게 보여줄 메시지.
+     */
+    public Optional<String> join(SignUpReq req) {
+        if (req.getEmail() == null || req.getEmail().isBlank()) {
+            return Optional.of("이메일을 입력해 주세요.");
+        }
+        if (req.getNickname() == null || req.getNickname().isBlank()) {
+            return Optional.of("닉네임을 입력해 주세요.");
+        }
+
+        String email = req.getEmail().trim();
+        String nickname = req.getNickname().trim();
+
+        if (memberDao.existsByEmail(email)) {
+            return Optional.of("이미 사용 중인 이메일입니다.");
+        }
+        if (memberDao.existsByNickname(nickname)) {
+            return Optional.of("이미 사용 중인 닉네임입니다.");
+        }
+
         if (req.getPassword() == null || req.getPassword().contains(" ")) {
-            return false;
+            return Optional.of("비밀번호를 확인해 주세요. (공백 불가)");
         }
 
-        // 3. 입력값 정제 (이메일은 위에서 null 체크 완료)
         req.setPassword(passwordEncoder.encode(req.getPassword()));
-        req.setEmail(req.getEmail().trim());
-        if (req.getName() != null) req.setName(req.getName().trim());
-        if (req.getNickname() != null) req.setNickname(req.getNickname().trim());
+        req.setEmail(email);
+        if (req.getName() != null) {
+            req.setName(req.getName().trim());
+        }
+        req.setNickname(nickname);
 
-        // 4. 저장 실행
         Members member = req.toEntity();
         int result = memberDao.join(member);
-
-        return result > 0;
+        if (result <= 0) {
+            return Optional.of("회원가입에 실패했습니다. 잠시 후 다시 시도해 주세요.");
+        }
+        return Optional.empty();
     }
 
     // 아이디 찾기

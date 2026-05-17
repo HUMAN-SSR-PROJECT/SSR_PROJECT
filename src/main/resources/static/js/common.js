@@ -64,8 +64,37 @@
         });
     }
 
+    function initSiteToast() {
+        document.querySelectorAll('[data-site-toast]').forEach(function (toast) {
+            var hideTimer;
+
+            function hideToast() {
+                toast.classList.remove('is-visible');
+            }
+
+            function showToast() {
+                window.requestAnimationFrame(function () {
+                    toast.classList.add('is-visible');
+                });
+                clearTimeout(hideTimer);
+                hideTimer = window.setTimeout(hideToast, 4500);
+            }
+
+            var closeBtn = toast.querySelector('[data-site-toast-close]');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', function () {
+                    clearTimeout(hideTimer);
+                    hideToast();
+                });
+            }
+
+            showToast();
+        });
+    }
+
     document.addEventListener('DOMContentLoaded', function () {
         initProfileMenu();
         initHeroSearch();
+        initSiteToast();
     });
 })();

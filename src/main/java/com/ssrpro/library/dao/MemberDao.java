@@ -70,6 +70,16 @@ public class MemberDao {
         return count != null && count > 0;
     }
 
+    // 닉네임 중복 체크
+    public boolean existsByNickname(String nickname) {
+        if (nickname == null || nickname.isBlank()) {
+            return false;
+        }
+        String sql = "SELECT COUNT(*) FROM MEMBERS WHERE MEMBER_NICKNAME = ?";
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, nickname.trim());
+        return count != null && count > 0;
+    }
+
     // 마이페이지 수정
     public int updateMemberProfile(Members member) {
         String sql = "UPDATE MEMBERS SET MEMBER_NICKNAME = ?, MEMBER_IMGURL = ?, " +

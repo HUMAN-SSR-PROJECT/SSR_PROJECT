@@ -13,6 +13,30 @@
     <th:block layout:fragment="extra-head"></th:block>
 </head>
 <body>
+<div class="site-toast site-toast--success"
+     th:if="${success}"
+     data-site-toast
+     role="status"
+     aria-live="polite">
+    <p class="site-toast__message" th:text="${success}">알림</p>
+    <button type="button" class="site-toast__close" data-site-toast-close aria-label="닫기">×</button>
+</div>
+<div class="site-toast site-toast--error"
+     th:if="${error}"
+     data-site-toast
+     role="alert"
+     aria-live="assertive">
+    <p class="site-toast__message" th:text="${error}">오류</p>
+    <button type="button" class="site-toast__close" data-site-toast-close aria-label="닫기">×</button>
+</div>
+<div class="site-toast site-toast--warn"
+     th:if="${param.needLogin != null}"
+     data-site-toast
+     role="alert"
+     aria-live="assertive">
+    <p class="site-toast__message">로그인이 필요한 서비스입니다.</p>
+    <button type="button" class="site-toast__close" data-site-toast-close aria-label="닫기">×</button>
+</div>
 <div class="site">
     <header th:replace="~{fragments/header :: header}"></header>
     <main class="site-main" th:classappend="${mainClass}">

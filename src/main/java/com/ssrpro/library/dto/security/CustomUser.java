@@ -12,6 +12,7 @@ public class CustomUser extends User {
 
   private final Long memberId;
   private final String email;
+  private final String name;
   private final String nickname;
 
   public CustomUser(Members member) {
@@ -26,6 +27,7 @@ public class CustomUser extends User {
     // 2. 추가 정보 저장
     this.memberId = member.getId();
     this.email = member.getEmail();
+    this.name = member.getName();
     this.nickname = member.getNickname();
   }
 

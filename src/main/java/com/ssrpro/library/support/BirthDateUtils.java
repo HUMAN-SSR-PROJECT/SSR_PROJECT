@@ -11,6 +11,13 @@ public final class BirthDateUtils {
     private BirthDateUtils() {
     }
 
+    public static String formatYyyyMmDd(LocalDate date) {
+        if (date == null) {
+            return "";
+        }
+        return date.format(BASIC);
+    }
+
     public static LocalDate parseYyyyMmDd(String raw) {
         if (raw == null || raw.isBlank()) {
             return null;

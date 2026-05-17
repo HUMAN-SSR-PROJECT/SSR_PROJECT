@@ -18,7 +18,11 @@ public class GlobalModelAdvice {
         if (user == null) {
             return 0;
         }
-        return readBookService.readingList(user.getMemberId()).size();
+        try {
+            return readBookService.readingList(user.getMemberId()).size();
+        } catch (Exception e) {
+            return 0;
+        }
     }
 
     @ModelAttribute("finishedCount")
@@ -26,6 +30,10 @@ public class GlobalModelAdvice {
         if (user == null) {
             return 0;
         }
-        return readBookService.readedList(user.getMemberId()).size();
+        try {
+            return readBookService.readedList(user.getMemberId()).size();
+        } catch (Exception e) {
+            return 0;
+        }
     }
 }

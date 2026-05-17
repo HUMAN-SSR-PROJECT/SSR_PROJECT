@@ -395,6 +395,17 @@
     transition: background 0.15s;
 }
 
+.book-search__item-form {
+    width: 100%;
+    margin: 0;
+    border: none;
+    background: transparent;
+    font: inherit;
+    text-align: inherit;
+    cursor: pointer;
+    appearance: none;
+}
+
 .book-search__item:hover {
     background: #faf9f7;
 }

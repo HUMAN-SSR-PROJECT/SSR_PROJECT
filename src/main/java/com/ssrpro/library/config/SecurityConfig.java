@@ -8,6 +8,8 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.AuthenticationEntryPoint;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 
 @Configuration
 @EnableWebSecurity // 시큐리티 설정을 활성화 함
@@ -27,10 +29,10 @@ public class SecurityConfig {
                 )
                 // 2. 로그인 설정
                 .formLogin(form -> form
-                        // 커스텀 로그인 페이지 경로
                         .loginPage("/member/login")
-                        // 로그인 성공시 이동할 페이지
-                        .defaultSuccessUrl("/", true)
+                        .loginProcessingUrl("/login")
+                        .failureUrl("/member/login?error")
+                        .successHandler(loginSuccessHandler())
                         .usernameParameter("email")
                         .passwordParameter("password")
                 )
@@ -40,12 +42,24 @@ public class SecurityConfig {
                         .logoutSuccessUrl("/")       // 성공 시 이동할 페이지
                         .invalidateHttpSession(true) // 세션 무효화
                         .deleteCookies("JSESSIONID") // (선택사항) 쿠키 삭제까지 추가하면 더 안전합니다.
-                );
+                )
+                .exceptionHandling(ex -> ex.authenticationEntryPoint(loginRequiredEntryPoint()));
         return http.build();
+    }
+
+    @Bean
+    public AuthenticationEntryPoint loginRequiredEntryPoint() {
+        return new LoginRequiredEntryPoint();
     }
     // 비밀번호 암호화 빈 등록 (회원가입 시 사용)
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
+
+    @Bean
+    public AuthenticationSuccessHandler loginSuccessHandler() {
+        return new LoginSuccessHandler();
+    }
+
 }

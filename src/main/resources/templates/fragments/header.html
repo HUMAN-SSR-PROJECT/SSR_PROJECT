@@ -20,8 +20,8 @@
                th:classappend="${activeNav == 'book-search'} ? ' is-active' : ''">도서 검색</a>
             <a class="site-nav__link" th:href="@{/mylib/readbook}" sec:authorize="isAuthenticated()">내 서재</a>
             <a class="site-nav__link" th:href="@{/mylib/stats}" sec:authorize="isAuthenticated()">독서 통계</a>
-            <a class="site-nav__link" th:href="@{/member/login}" sec:authorize="!isAuthenticated()">내 서재</a>
-            <a class="site-nav__link" th:href="@{/member/login}" sec:authorize="!isAuthenticated()">독서 통계</a>
+            <a class="site-nav__link" th:href="@{/member/login(needLogin=true)}" sec:authorize="!isAuthenticated()">내 서재</a>
+            <a class="site-nav__link" th:href="@{/member/login(needLogin=true)}" sec:authorize="!isAuthenticated()">독서 통계</a>
         </nav>
 
         <a class="btn-signin" sec:authorize="!isAuthenticated()" th:href="@{/member/login}">SIGN IN</a>
@@ -34,7 +34,7 @@
                     aria-controls="profile-menu"
                     aria-haspopup="true">
                 <span class="profile__avatar"
-                      th:text="${#strings.isEmpty(principal.nickname) ? '?' : #strings.substring(principal.nickname, 0, 1)}">김</span>
+                      th:text="${#authentication.principal.nickname != null and !#strings.isEmpty(#authentication.principal.nickname) ? #strings.substring(#authentication.principal.nickname, 0, 1) : '?'}">김</span>
                 <span class="profile__name" sec:authentication="principal.nickname">회원</span>
                 <span class="profile__chevron" aria-hidden="true">
                     <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
