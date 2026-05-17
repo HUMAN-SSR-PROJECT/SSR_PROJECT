@@ -409,17 +409,13 @@
             </p>
         </section>
     </div>
-</div>
 
-<p class="book-detail__error" th:if="${book == null and bookError != null}" th:text="${bookError}">오류</p>
-<p class="book-detail__error" th:if="${book == null and bookError == null}">도서를 찾을 수 없습니다.</p>
+    <div id="book-review-backdrop"
+         class="book-detail-modal-backdrop"
+         hidden
+         aria-hidden="true"></div>
 
-<div id="book-review-backdrop"
-     class="book-detail-modal-backdrop"
-     hidden
-     aria-hidden="true"></div>
-
-<dialog class="book-detail-modal" id="book-review-modal" aria-labelledby="book-review-modal-title">
+    <dialog class="book-detail-modal" id="book-review-modal" aria-labelledby="book-review-modal-title">
     <div class="book-detail-modal__head">
         <div>
             <p class="book-detail-modal__eyebrow" id="book-review-modal-eyebrow">WRITE A REVIEW</p>
@@ -473,6 +469,10 @@
         </div>
     </form>
 </dialog>
+</div>
+
+<p class="book-detail__error" th:if="${book == null and bookError != null}" th:text="${bookError}">오류</p>
+<p class="book-detail__error" th:if="${book == null and bookError == null}">도서를 찾을 수 없습니다.</p>
 
 <th:block layout:fragment="extra-scripts">
     <script th:src="@{/js/book-detail.js}"></script>
