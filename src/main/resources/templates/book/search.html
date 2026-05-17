@@ -128,6 +128,11 @@
             </div>
         </div>
 
+        <p th:if="${searched and libraryApiWarning != null}"
+           class="book-search__api-notice"
+           role="alert"
+           th:text="${libraryApiWarning}">API 안내</p>
+
         <div th:if="${searched and isEmpty}" class="book-search__empty">
             <div class="book-search__empty-icon" aria-hidden="true">
                 <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -149,7 +154,12 @@
         <div th:if="${searched and !isEmpty}">
             <div class="book-search__summary">
                 <p class="book-search__summary-count">
-                    <span th:text="${count}">0</span> 건 검색됨 —
+                    <span th:if="${countAtLeast}" th:text="${count + '+'}">10+</span>
+                    <span th:unless="${countAtLeast}" th:text="${count}">0</span>
+                    건 검색됨
+                    <span th:if="${pageResult != null and pageResult.totalPages > 1}"
+                          th:text="${' · ' + pageResult.page + ' / ' + pageResult.totalPages + (pageResult.hasNext() ? '+' : '') + ' 페이지'}"> · 1 / 3 페이지</span>
+                    —
                     <em th:text="|&quot;${keyword}&quot;|">"키워드"</em>
                     <span th:if="${locationLabel != null and !locationLabel.isEmpty()}"
                           th:text="${' · ' + locationLabel}"> · 지역</span>
@@ -165,7 +175,9 @@
                            th:each="code : ${book.libraryCodes}"
                            name="libraryCodes"
                            th:value="${code}">
-                    <div class="book-search__item-index" th:text="${stat.count < 10 ? '0' + stat.count : stat.count}">01</div>
+                    <div class="book-search__item-index"
+                         th:with="idx=${pageResult.itemOffset() + stat.count}"
+                         th:text="${idx < 10 ? '0' + idx : idx}">01</div>
                     <div class="book-search__item-main">
                         <div class="book-search__item-cover">
                             <img th:if="${book.bookImg != null and !book.bookImg.isEmpty()}"
@@ -200,6 +212,7 @@
                     </div>
                 </form>
             </div>
+            <div th:replace="~{fragments/pagination :: book-search(${pageResult}, ${keyword}, ${searchReq.city}, ${searchReq.district})}"></div>
             <p class="book-search__footnote">* 도서를 클릭하면 보유 도서관과 대출 가능 여부를 확인할 수 있습니다.</p>
         </div>
     </section>

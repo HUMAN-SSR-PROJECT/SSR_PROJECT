@@ -29,10 +29,27 @@
         }
     }
 
-    var kakaoKey = root.getAttribute('data-kakao-key') || '';
+    var kakaoKey = (root.getAttribute('data-kakao-key') || '').trim();
     var kakaoReady = false;
     var kakaoLoading = false;
+    var kakaoLoadFailed = false;
     var mapInstances = {};
+
+    function isKakaoKeyConfigured() {
+        return kakaoKey.length >= 20
+            && kakaoKey.indexOf('$') === -1
+            && kakaoKey.indexOf('KAKAO_MAP') === -1;
+    }
+
+    function mapLoadFailMessage() {
+        if (!isKakaoKeyConfigured()) {
+            return '카카오 JavaScript 키가 페이지에 전달되지 않았습니다. '
+                + '.env의 KAKAO_MAP_JS_KEY 설정 후 ./gradlew bootRun으로 완전히 재시작하세요.';
+        }
+        return '카카오 지도 SDK를 불러오지 못했습니다. '
+            + '① 개발자 콘솔의 JavaScript 키(REST 키 아님) ② Web 플랫폼 사이트 도메인에 '
+            + 'http://localhost:8111 과 http://127.0.0.1:8111 등록 ③ 브라우저 주소가 등록한 도메인과 동일한지 확인하세요.';
+    }
 
     /* Tabs */
     var tabs = root.querySelectorAll('[data-book-tab]');
@@ -252,7 +269,26 @@
     });
 
     /* Kakao map */
-    function loadKakaoSdk(callback) {
+    function showMapMessage(canvas, message) {
+        if (!canvas) {
+            return;
+        }
+        canvas.innerHTML = '<p class="book-detail__map-fallback">' + message + '</p>';
+    }
+
+    function loadKakaoSdk(callback, onFail) {
+        if (!isKakaoKeyConfigured()) {
+            if (typeof onFail === 'function') {
+                onFail();
+            }
+            return;
+        }
+        if (kakaoLoadFailed) {
+            if (typeof onFail === 'function') {
+                onFail();
+            }
+            return;
+        }
         if (kakaoReady && window.kakao && window.kakao.maps) {
             callback();
             return;
@@ -262,25 +298,63 @@
                 if (kakaoReady) {
                     clearInterval(wait);
                     callback();
+                } else if (kakaoLoadFailed) {
+                    clearInterval(wait);
+                    if (typeof onFail === 'function') {
+                        onFail();
+                    }
                 }
             }, 100);
             return;
         }
-        if (!kakaoKey) {
-            return;
-        }
-        kakaoLoading = true;
-        var script = document.createElement('script');
-        script.src = '//dapi.kakao.com/v2/maps/sdk.js?appkey=' + encodeURIComponent(kakaoKey) + '&autoload=false';
-        script.onload = function () {
+        function finishLoad() {
+            if (!window.kakao || !window.kakao.maps) {
+                kakaoLoading = false;
+                kakaoLoadFailed = true;
+                console.error('[book-detail] Kakao Maps SDK 없음 — 키·도메인 설정 확인');
+                if (typeof onFail === 'function') {
+                    onFail();
+                }
+                return;
+            }
             window.kakao.maps.load(function () {
                 kakaoReady = true;
                 kakaoLoading = false;
                 callback();
             });
-        };
+        }
+
+        var existing = document.querySelector('script[src*="dapi.kakao.com/v2/maps/sdk.js"]');
+        if (existing) {
+            if (window.kakao && window.kakao.maps) {
+                finishLoad();
+            } else {
+                existing.addEventListener('load', finishLoad);
+                existing.addEventListener('error', function () {
+                    kakaoLoading = false;
+                    kakaoLoadFailed = true;
+                    console.error('[book-detail] Kakao SDK script 로드 실패(도메인 미등록 가능)');
+                    if (typeof onFail === 'function') {
+                        onFail();
+                    }
+                });
+            }
+            return;
+        }
+
+        kakaoLoading = true;
+        var script = document.createElement('script');
+        script.src = 'https://dapi.kakao.com/v2/maps/sdk.js?appkey='
+            + encodeURIComponent(kakaoKey)
+            + '&autoload=false';
+        script.onload = finishLoad;
         script.onerror = function () {
             kakaoLoading = false;
+            kakaoLoadFailed = true;
+            console.error('[book-detail] Kakao SDK script 로드 실패(도메인 미등록 가능)');
+            if (typeof onFail === 'function') {
+                onFail();
+            }
         };
         document.head.appendChild(script);
     }
@@ -291,31 +365,47 @@
             return;
         }
         var lib = libraries[index];
-        if (!lib || lib.lat == null || lib.lon == null) {
-            canvas.innerHTML = '<p style="padding:24px;text-align:center;color:#888880;font-size:13px;">지도 좌표 정보가 없습니다.</p>';
+        if (!lib) {
+            showMapMessage(canvas, '도서관 정보를 불러올 수 없습니다.');
             return;
         }
-        var center = new window.kakao.maps.LatLng(lib.lat, lib.lon);
+        var lat = parseFloat(lib.lat);
+        var lon = parseFloat(lib.lon);
+        if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
+            showMapMessage(canvas, '지도 좌표 정보가 없습니다.');
+            return;
+        }
+        if (!window.kakao || !window.kakao.maps) {
+            showMapMessage(canvas, '지도를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.');
+            return;
+        }
+        var center = new window.kakao.maps.LatLng(lat, lon);
         if (mapInstances[index]) {
             setTimeout(function () {
                 mapInstances[index].relayout();
                 mapInstances[index].setCenter(center);
-            }, 200);
+            }, 320);
             return;
         }
-        var map = new window.kakao.maps.Map(canvas, {
-            center: center,
-            level: 4
-        });
-        new window.kakao.maps.Marker({
-            map: map,
-            position: center
-        });
-        mapInstances[index] = map;
-        setTimeout(function () {
-            map.relayout();
-            map.setCenter(center);
-        }, 200);
+        canvas.innerHTML = '';
+        try {
+            var map = new window.kakao.maps.Map(canvas, {
+                center: center,
+                level: 4
+            });
+            new window.kakao.maps.Marker({
+                map: map,
+                position: center
+            });
+            mapInstances[index] = map;
+            setTimeout(function () {
+                map.relayout();
+                map.setCenter(center);
+            }, 320);
+        } catch (e) {
+            console.error('[book-detail] Kakao Map 생성 실패', e);
+            showMapMessage(canvas, mapLoadFailMessage());
+        }
     }
 
     function closeAllMapPanels() {
@@ -363,15 +453,26 @@
                 if (sideAddr) {
                     sideAddr.textContent = lib.addr || '';
                 }
-                if (kakaoLink && lib.lat != null && lib.lon != null) {
-                    kakaoLink.href = 'https://map.kakao.com/link/map/'
-                        + encodeURIComponent(lib.name || '도서관')
-                        + ',' + lib.lat + ',' + lib.lon;
+                if (kakaoLink) {
+                    var lat = parseFloat(lib.lat);
+                    var lon = parseFloat(lib.lon);
+                    if (Number.isFinite(lat) && Number.isFinite(lon)) {
+                        kakaoLink.href = 'https://map.kakao.com/link/map/'
+                            + encodeURIComponent(lib.name || '도서관')
+                            + ',' + lat + ',' + lon;
+                        kakaoLink.hidden = false;
+                    } else {
+                        kakaoLink.hidden = true;
+                    }
                 }
             }
 
+            var canvas = panel.querySelector('[data-map-canvas]');
+
             loadKakaoSdk(function () {
                 renderMap(index, panel);
+            }, function () {
+                showMapMessage(canvas, mapLoadFailMessage());
             });
         });
     });

@@ -15,5 +15,7 @@ public class BookSearchReq {
     private int city;
     /** 정보나루 dtl_region (시군구 5자리, 0=전체, 예: 11010=종로구) */
     private int district;
+    /** 1부터 시작 */
+    private int page;
 
 }

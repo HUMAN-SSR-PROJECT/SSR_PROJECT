@@ -105,16 +105,25 @@ public class BookDetailController {
         model.addAttribute("readSoonSaved", readSoonSaved);
 
         List<LibraryRes> libraries = List.of();
+        String libraryApiWarning = null;
+        String distanceHint = null;
         try {
             String isbn = book != null ? book.getBookIsbn() : null;
-            libraries = libraryService.findLibrariesForBookDetail(req, isbn);
+            LibraryService.BookDetailLibrariesResult libraryResult =
+                    libraryService.findLibrariesForBookDetail(req, isbn, memberId);
+            libraries = libraryResult.libraries();
+            libraryApiWarning = libraryResult.libraryApiWarning();
+            distanceHint = libraryResult.distanceHint();
             model.addAttribute("libraries", libraries);
         } catch (Exception e) {
             model.addAttribute("libraryError", e.getMessage());
             model.addAttribute("libraries", List.of());
         }
+        model.addAttribute("libraryApiWarning", libraryApiWarning);
+        model.addAttribute("distanceHint", distanceHint);
         model.addAttribute("libraryCount", libraries.size());
         model.addAttribute("librariesJson", toLibrariesJson(libraries));
+        model.addAttribute("mainClass", "site-main--fluid");
 
         return "book/detail";
     }

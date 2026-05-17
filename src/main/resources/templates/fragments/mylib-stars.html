@@ -3,12 +3,13 @@
 <body>
 <span class="mylib-card__stars"
       th:fragment="rating(rating)"
+      th:with="filledStars=${T(com.ssrpro.library.util.MylibViewHelper).filledStarCount(rating)}"
       aria-hidden="true">
     <svg th:each="i : ${#numbers.sequence(1, 5)}"
          width="13"
          height="13"
          viewBox="0 0 14 14"
-         th:classappend="${rating != null and i <= T(java.lang.Math).round(rating)} ? ' is-filled' : ''">
+         th:classappend="${i <= filledStars} ? ' is-filled' : ''">
         <path d="M7 1L8.8 5.2L13.4 5.6L10 8.6L11 13.2L7 10.8L3 13.2L4 8.6L0.6 5.6L5.2 5.2L7 1Z"
               fill="currentColor"/>
     </svg>

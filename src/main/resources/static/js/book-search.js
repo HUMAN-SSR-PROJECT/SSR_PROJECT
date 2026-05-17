@@ -256,6 +256,19 @@
         var initialCity = parseInt(cityInput.value, 10) || SEOUL_CODE;
         var initialDistrict = parseInt(districtInput.value, 10) || 0;
         renderDistrictTabs(initialCity, initialDistrict);
+
+        document.querySelectorAll('.book-search__item-form').forEach(function (itemForm) {
+            itemForm.addEventListener('click', function (e) {
+                if (e.target.closest('button, a, input, label')) {
+                    return;
+                }
+                if (typeof itemForm.requestSubmit === 'function') {
+                    itemForm.requestSubmit();
+                } else {
+                    itemForm.submit();
+                }
+            });
+        });
     }
 
     document.addEventListener('DOMContentLoaded', initBookSearch);

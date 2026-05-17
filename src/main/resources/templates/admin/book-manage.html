@@ -5,10 +5,185 @@
       lang="ko">
 <head>
     <title>도서 관리</title>
+    <th:block layout:fragment="extra-head">
+        <link rel="stylesheet" th:href="@{/css/admin.css}">
+        <link rel="stylesheet" th:href="@{/css/empty-state.css}">
+    </th:block>
 </head>
 <body>
-<div layout:fragment="content">
-    <h1 class="page-title">도서 관리</h1>
+<div layout:fragment="content" class="admin" data-admin>
+    <div class="admin__shell">
+        <aside th:replace="~{fragments/admin-sidebar :: sidebar(${activeNav})}"></aside>
+        <main class="admin__main">
+            <header class="admin__head">
+                <span class="admin__head-icon" aria-hidden="true">
+                    <svg viewBox="0 0 20 20" fill="none"><path d="M4 3H16V17H4V3Z" stroke="currentColor"/><path d="M7 6H13M7 9H13" stroke="currentColor" stroke-linecap="round"/></svg>
+                </span>
+                <h1 class="admin__title">도서 관리</h1>
+            </header>
+
+            <section class="admin-stats" aria-label="도서 통계">
+                <article class="admin-stat-card">
+                    <p class="admin-stat-card__label">등록 도서</p>
+                    <div class="admin-stat-card__value-row">
+                        <p class="admin-stat-card__value"
+                           th:text="${#numbers.formatInteger(totalBooksCount, 0, 'COMMA')}">0</p>
+                        <span class="admin-stat-card__unit">권</span>
+                    </div>
+                </article>
+                <article class="admin-stat-card">
+                    <p class="admin-stat-card__label">장르 수</p>
+                    <div class="admin-stat-card__value-row">
+                        <p class="admin-stat-card__value"
+                           th:text="${#numbers.formatInteger(totalGenres, 0, 'COMMA')}">0</p>
+                        <span class="admin-stat-card__unit">종</span>
+                    </div>
+                </article>
+                <article class="admin-stat-card">
+                    <p class="admin-stat-card__label">최다 장르</p>
+                    <div class="admin-stat-card__value-row">
+                        <p class="admin-stat-card__value admin-stat-card__value--text"
+                           th:text="${mostCommonGenre}">—</p>
+                    </div>
+                </article>
+            </section>
+
+            <div class="admin-toolbar">
+                <p class="admin-toolbar__count">
+                    목록 <strong th:text="${listCount != null ? listCount : 0}">0</strong>건
+                    <span th:if="${pageResult != null and pageResult.totalPages > 1}"
+                          th:text="${' · ' + pageResult.page + ' / ' + pageResult.totalPages + ' 페이지'}"></span>
+                </p>
+                <form class="admin-search" th:action="@{/admin/books}" method="get" role="search">
+                    <input class="admin-search__input"
+                           type="search"
+                           name="keyword"
+                           th:value="${keyword}"
+                           placeholder="제목, 저자, 출판사, 장르 검색"
+                           aria-label="도서 검색">
+                    <button class="admin-search__btn" type="submit">검색</button>
+                </form>
+            </div>
+
+            <th:block th:if="${totalBooksCount == 0}">
+                <div th:replace="~{fragments/empty-state :: admin-books-list}"></div>
+            </th:block>
+
+            <th:block th:if="${totalBooksCount > 0 and listCount == 0 and keyword != null and !keyword.isEmpty()}">
+                <div th:replace="~{fragments/empty-state :: admin-books-search}"></div>
+            </th:block>
+
+            <th:block th:if="${totalBooksCount > 0 and listCount > 0}">
+                <div class="admin-table-wrap">
+                    <table class="admin-table admin-table--books">
+                        <colgroup>
+                            <col class="col-book-cover">
+                            <col class="col-book-id">
+                            <col class="col-book-title">
+                            <col class="col-book-writer">
+                            <col class="col-book-company">
+                            <col class="col-book-genre">
+                            <col class="col-book-joined">
+                            <col class="col-actions">
+                        </colgroup>
+                        <thead>
+                        <tr>
+                            <th scope="col">도서</th>
+                            <th scope="col">BOOK ID</th>
+                            <th scope="col">제목</th>
+                            <th scope="col">저자</th>
+                            <th scope="col">출판사</th>
+                            <th scope="col">장르</th>
+                            <th scope="col">등록일</th>
+                            <th scope="col" class="col-actions"><span class="visually-hidden">작업</span></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <th:block th:each="book, stat : ${books}">
+                            <tr class="admin-table__row"
+                                th:classappend="${stat.first} ? ' admin-table__row--highlight' : ''"
+                                data-admin-item-row>
+                                <td>
+                                    <div class="admin-book-cell">
+                                        <div class="admin-book-thumb">
+                                            <img th:if="${book.bookImg != null and !book.bookImg.isEmpty()}"
+                                                 th:src="${book.bookImg}"
+                                                 th:alt="${book.bookTitle + ' 표지'}"
+                                                 loading="lazy">
+                                            <svg th:unless="${book.bookImg != null and !book.bookImg.isEmpty()}"
+                                                 viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                                                <path d="M2 1H10V11H2V1Z" stroke="currentColor"/>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="admin-table__id"
+                                    th:text="${'B' + #numbers.formatInteger(book.bookId, 3)}">B001</td>
+                                <td class="admin-table__title" th:text="${book.bookTitle}">제목</td>
+                                <td th:text="${book.bookWriter}">저자</td>
+                                <td th:text="${book.bookCompany}">출판사</td>
+                                <td class="admin-table__genre">
+                                    <span class="admin-badge admin-badge--genre"
+                                          th:text="${book.bookGenre}">장르</span>
+                                </td>
+                                <td th:text="${book.bookCreatedAt != null ? #temporals.format(book.bookCreatedAt, 'yyyy-MM-dd') : '—'}">—</td>
+                                <td class="col-actions">
+                                    <div class="admin-table__actions">
+                                        <button type="button"
+                                                class="admin-icon-btn admin-icon-btn--danger"
+                                                title="도서 삭제"
+                                                data-admin-delete-toggle
+                                                aria-expanded="false">
+                                            <svg viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M2 3H10M4 3V2H8V3M5 5V9M7 5V9M3 3L3.5 10H8.5L9 3" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="admin-delete-row" aria-hidden="true">
+                                <td colspan="8">
+                                    <div class="admin-delete-panel">
+                                        <p class="admin-delete-panel__message">
+                                            <svg viewBox="0 0 13 13" fill="none" aria-hidden="true">
+                                                <circle cx="6.5" cy="6.5" r="5.5" stroke="currentColor"/>
+                                                <path d="M6.5 4V7M6.5 9H6.51" stroke="currentColor" stroke-linecap="round"/>
+                                            </svg>
+                                            <span>
+                                                <strong th:text="'「' + ${book.bookTitle} + '」'">「제목」</strong>
+                                                을(를) 정말 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.
+                                            </span>
+                                        </p>
+                                        <div class="admin-delete-panel__actions">
+                                            <button type="button"
+                                                    class="admin-btn admin-btn--ghost"
+                                                    data-admin-delete-cancel>취소</button>
+                                            <form th:action="@{/admin/books/{id}/delete(id=${book.bookId})}"
+                                                  method="post">
+                                                <input type="hidden"
+                                                       th:name="${_csrf.parameterName}"
+                                                       th:value="${_csrf.token}">
+                                                <input type="hidden" name="keyword" th:value="${keyword}">
+                                                <input type="hidden" name="page" th:value="${pageResult.page}">
+                                                <button type="submit" class="admin-btn admin-btn--danger">
+                                                    <svg viewBox="0 0 11 11" fill="none" aria-hidden="true"><path d="M2 3H9M4 3V2H7V3M5 5V8M6 5V8M3 3L3.5 9H7.5L8 3" stroke="currentColor" stroke-linecap="round"/></svg>
+                                                    삭제 확인
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </th:block>
+                        </tbody>
+                    </table>
+                </div>
+                <div th:replace="~{fragments/pagination :: admin-books(${pageResult}, ${keyword})}"></div>
+            </th:block>
+        </main>
+    </div>
 </div>
+
+<th:block layout:fragment="extra-scripts">
+    <script th:src="@{/js/admin.js}"></script>
+</th:block>
 </body>
 </html>

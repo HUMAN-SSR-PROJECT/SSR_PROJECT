@@ -1,9 +1,10 @@
 package com.ssrpro.library.controller;
 
-import com.ssrpro.library.dto.request.BookSearchReq;
+import com.ssrpro.library.dto.entity.Members;
+import com.ssrpro.library.dto.response.BookRes;
+import com.ssrpro.library.dto.response.PageResult;
 import com.ssrpro.library.service.BookService;
 import com.ssrpro.library.service.MemberService;
-import com.ssrpro.library.service.ReadBookService;
 import com.ssrpro.library.service.LibraryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -12,6 +13,8 @@ import org.springframework.ui.Model;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.constraints.Positive;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 /**
  * AdminController
@@ -27,14 +30,34 @@ public class AdminController {
 
   private final BookService bookService;
   private final MemberService memberService;
-  private final ReadBookService readBookService;
   private final LibraryService libraryService;
 
   /**
    * [1] 관리자 대시보드
    */
+  private void addAdminLayout(Model model, String activeNav) {
+    model.addAttribute("mainClass", "site-main--fluid");
+    model.addAttribute("activeNav", activeNav);
+  }
+
+  private static String redirectWithKeyword(String path, String keyword, int page) {
+    StringBuilder url = new StringBuilder("redirect:").append(path);
+    boolean hasQuery = false;
+    if (keyword != null && !keyword.isBlank()) {
+      url.append(hasQuery ? "&" : "?")
+          .append("keyword=")
+          .append(URLEncoder.encode(keyword.trim(), StandardCharsets.UTF_8));
+      hasQuery = true;
+    }
+    if (page > 1) {
+      url.append(hasQuery ? "&" : "?").append("page=").append(page);
+    }
+    return url.toString();
+  }
+
   @GetMapping("/dashboard")
   public String dashboard(Model model) {
+    addAdminLayout(model, "dashboard");
     // 상단 통계
     model.addAttribute("totalMembers", memberService.getTotalCount());
     model.addAttribute("totalLibraries", libraryService.countAllLibrary());
@@ -53,13 +76,19 @@ public class AdminController {
   @GetMapping("/books")
   public String bookManagement(
       @RequestParam(required = false, defaultValue = "") String keyword,
+      @RequestParam(defaultValue = "1") int page,
       Model model) {
 
-    BookSearchReq req = BookSearchReq.builder()
-        .keyword(keyword.trim())
-        .build();
-    model.addAttribute("books", bookService.searchBooks(req));
-    model.addAttribute("keyword", keyword.trim());
+    addAdminLayout(model, "books");
+    String trimmed = keyword == null ? "" : keyword.trim();
+    PageResult<BookRes> bookPage = bookService.findBooksForAdmin(trimmed, page);
+    if (bookPage.getTotalPages() > 0 && page > bookPage.getTotalPages()) {
+      bookPage = bookService.findBooksForAdmin(trimmed, bookPage.getTotalPages());
+    }
+    model.addAttribute("books", bookPage.getContent());
+    model.addAttribute("pageResult", bookPage);
+    model.addAttribute("listCount", bookPage.getTotalItems());
+    model.addAttribute("keyword", trimmed);
 
     model.addAttribute("totalBooksCount", bookService.countAllBooks());
     model.addAttribute("totalGenres", bookService.countGenreTypes());
@@ -71,9 +100,12 @@ public class AdminController {
    * [3] 도서 삭제 처리
    */
   @PostMapping("/books/{id}/delete")
-  public String deleteBook(@PathVariable @Positive Long id) {
+  public String deleteBook(
+      @PathVariable @Positive Long id,
+      @RequestParam(required = false, defaultValue = "") String keyword,
+      @RequestParam(defaultValue = "1") int page) {
     bookService.deleteById(id);
-    return "redirect:/admin/books";
+    return redirectWithKeyword("/admin/books", keyword, page);
   }
 
   /**
@@ -82,11 +114,20 @@ public class AdminController {
   @GetMapping("/members")
   public String memberList(
       @RequestParam(required = false, defaultValue = "") String keyword,
+      @RequestParam(defaultValue = "1") int page,
       Model model) {
 
+    addAdminLayout(model, "members");
+    String trimmed = keyword == null ? "" : keyword.trim();
+    PageResult<Members> memberPage = memberService.getMembersPaged(trimmed, page);
+    if (memberPage.getTotalPages() > 0 && page > memberPage.getTotalPages()) {
+      memberPage = memberService.getMembersPaged(trimmed, memberPage.getTotalPages());
+    }
     model.addAttribute("totalCount", memberService.getTotalCount());
-    model.addAttribute("members", memberService.getAllMembers(keyword.trim()));
-    model.addAttribute("keyword", keyword.trim());
+    model.addAttribute("members", memberPage.getContent());
+    model.addAttribute("pageResult", memberPage);
+    model.addAttribute("listCount", memberPage.getTotalItems());
+    model.addAttribute("keyword", trimmed);
 
     return "admin/member-list";
   }
@@ -98,18 +139,23 @@ public class AdminController {
   @PostMapping("/members/{id}/update-status")
   public String updateMemberStatus(
       @PathVariable @Positive Long id,
-      @RequestParam String state) {
+      @RequestParam String state,
+      @RequestParam(required = false, defaultValue = "") String keyword,
+      @RequestParam(defaultValue = "1") int page) {
 
     memberService.changeMemberState(id, state);
-    return "redirect:/admin/members";
+    return redirectWithKeyword("/admin/members", keyword, page);
   }
 
   /**
    * [6] 회원 삭제 처리
    */
   @PostMapping("/members/{id}/delete")
-  public String deleteMember(@PathVariable @Positive Long id) {
+  public String deleteMember(
+      @PathVariable @Positive Long id,
+      @RequestParam(required = false, defaultValue = "") String keyword,
+      @RequestParam(defaultValue = "1") int page) {
     memberService.removeMember(id);
-    return "redirect:/admin/members";
+    return redirectWithKeyword("/admin/members", keyword, page);
   }
 }

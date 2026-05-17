@@ -5,10 +5,111 @@
       lang="ko">
 <head>
     <title>관리자 대시보드</title>
+    <th:block layout:fragment="extra-head">
+        <link rel="stylesheet" th:href="@{/css/admin.css}">
+    </th:block>
 </head>
 <body>
-<div layout:fragment="content">
-    <h1 class="page-title">관리자 대시보드</h1>
+<div layout:fragment="content" class="admin" data-admin>
+    <div class="admin__shell">
+        <aside th:replace="~{fragments/admin-sidebar :: sidebar(${activeNav})}"></aside>
+        <main class="admin__main">
+            <header class="admin__head">
+                <span class="admin__head-icon" aria-hidden="true">
+                    <svg viewBox="0 0 20 20" fill="none"><path d="M3 3H9V9H3V3ZM11 3H17V9H11V3ZM3 11H9V17H3V11ZM11 11H17V17H11V11Z" stroke="currentColor" stroke-width="1.2"/></svg>
+                </span>
+                <h1 class="admin__title">대시보드</h1>
+            </header>
+
+            <section class="admin-stats" aria-label="통계">
+                <article class="admin-stat-card">
+                    <p class="admin-stat-card__label">총 회원 수</p>
+                    <div class="admin-stat-card__value-row">
+                        <p class="admin-stat-card__value"
+                           th:text="${#numbers.formatInteger(totalMembers, 0, 'COMMA')}">0</p>
+                        <span class="admin-stat-card__unit">명</span>
+                    </div>
+                </article>
+                <article class="admin-stat-card">
+                    <p class="admin-stat-card__label">등록 도서관</p>
+                    <div class="admin-stat-card__value-row">
+                        <p class="admin-stat-card__value"
+                           th:text="${#numbers.formatInteger(totalLibraries, 0, 'COMMA')}">0</p>
+                        <span class="admin-stat-card__unit">개</span>
+                    </div>
+                </article>
+                <article class="admin-stat-card">
+                    <p class="admin-stat-card__label">등록 도서</p>
+                    <div class="admin-stat-card__value-row">
+                        <p class="admin-stat-card__value"
+                           th:text="${#numbers.formatInteger(totalBooks, 0, 'COMMA')}">0</p>
+                        <span class="admin-stat-card__unit">권</span>
+                    </div>
+                </article>
+            </section>
+
+            <section class="admin-panels">
+                <article class="admin-panel">
+                    <header class="admin-panel__head">
+                        <h2 class="admin-panel__title">최근 가입 회원</h2>
+                        <a class="admin-panel__link" th:href="@{/admin/members}">전체 보기</a>
+                    </header>
+                    <th:block th:if="${recentMembers != null and !recentMembers.isEmpty()}">
+                        <table class="admin-mini-table">
+                            <thead>
+                            <tr>
+                                <th scope="col">회원</th>
+                                <th scope="col">이메일</th>
+                                <th scope="col">가입일</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="m : ${recentMembers}">
+                                <td>
+                                    <span class="admin-mini-table__name" th:text="${m.name}">이름</span>
+                                    <span th:text="' · ' + ${m.nickname}">닉네임</span>
+                                </td>
+                                <td th:text="${m.email}">email</td>
+                                <td th:text="${m.createdAt != null ? #temporals.format(m.createdAt, 'yyyy-MM-dd') : '—'}">—</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </th:block>
+                    <th:block th:if="${recentMembers == null or recentMembers.isEmpty()}">
+                        <div th:replace="~{fragments/empty-state :: admin-dashboard-members}"></div>
+                    </th:block>
+                </article>
+
+                <article class="admin-panel">
+                    <header class="admin-panel__head">
+                        <h2 class="admin-panel__title">최근 등록 도서</h2>
+                        <a class="admin-panel__link" th:href="@{/admin/books}">전체 보기</a>
+                    </header>
+                    <th:block th:if="${recentBooks != null and !recentBooks.isEmpty()}">
+                        <table class="admin-mini-table">
+                            <thead>
+                            <tr>
+                                <th scope="col">도서</th>
+                                <th scope="col">저자</th>
+                                <th scope="col">등록일</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="b : ${recentBooks}">
+                                <td class="admin-mini-table__name" th:text="${b.bookTitle}">제목</td>
+                                <td th:text="${b.bookWriter}">저자</td>
+                                <td th:text="${b.bookCreatedAt != null ? #temporals.format(b.bookCreatedAt, 'yyyy-MM-dd') : '—'}">—</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </th:block>
+                    <th:block th:if="${recentBooks == null or recentBooks.isEmpty()}">
+                        <div th:replace="~{fragments/empty-state :: admin-dashboard-books}"></div>
+                    </th:block>
+                </article>
+            </section>
+        </main>
+    </div>
 </div>
 </body>
 </html>

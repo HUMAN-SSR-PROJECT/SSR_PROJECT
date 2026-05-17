@@ -115,8 +115,9 @@
                 <div th:replace="~{fragments/empty-state :: mylib-reading}"></div>
             </div>
             <div th:if="${!#lists.isEmpty(readingList)}" class="mylib-readbook__grid">
-                <th:block th:each="book : ${readingList}"
-                          th:replace="~{fragments/mylib-book-card :: reading(${book})}"></th:block>
+                <th:block th:each="book : ${readingList}">
+                    <article th:replace="~{fragments/mylib-book-card :: reading(${book})}"></article>
+                </th:block>
             </div>
         </section>
 
@@ -137,8 +138,9 @@
                 <div th:replace="~{fragments/empty-state :: mylib-wishlist}"></div>
             </div>
             <div th:if="${!#lists.isEmpty(readSoonList)}" class="mylib-readbook__grid mylib-readbook__grid--soon">
-                <th:block th:each="book : ${readSoonList}"
-                          th:replace="~{fragments/mylib-book-card :: wishlist(${book})}"></th:block>
+                <th:block th:each="book : ${readSoonList}">
+                    <article th:replace="~{fragments/mylib-book-card :: wishlist(${book})}"></article>
+                </th:block>
             </div>
         </section>
 
@@ -159,8 +161,9 @@
                 <div th:replace="~{fragments/empty-state :: mylib-completed}"></div>
             </div>
             <div th:if="${!#lists.isEmpty(readedList)}" class="mylib-readbook__grid mylib-readbook__grid--finished">
-                <th:block th:each="book : ${readedList}"
-                          th:replace="~{fragments/mylib-book-card :: completed(${book})}"></th:block>
+                <th:block th:each="book : ${readedList}">
+                    <article th:replace="~{fragments/mylib-book-card :: completed(${book})}"></article>
+                </th:block>
             </div>
         </section>
     </div>

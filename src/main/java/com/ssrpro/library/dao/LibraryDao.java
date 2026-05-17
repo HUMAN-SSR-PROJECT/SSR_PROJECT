@@ -30,6 +30,15 @@ public class LibraryDao {
         return count != null && count > 0;
     }
 
+    public boolean existsByLibraryAddr(String libraryAddr) {
+        if (libraryAddr == null || libraryAddr.isBlank()) {
+            return false;
+        }
+        String sql = "SELECT COUNT(*) FROM LIBRARY WHERE LIBRARY_ADDR = ?";
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, libraryAddr.trim());
+        return count != null && count > 0;
+    }
+
     public boolean insertLibrary(Library library) {
         String sql = "INSERT INTO LIBRARY "
                 + "(LIBRARY_ID, LIBRARY_CODE, LIBRARY_NAME, LIBRARY_ADDR, LIBRARY_LAT, LIBRARY_LON) "

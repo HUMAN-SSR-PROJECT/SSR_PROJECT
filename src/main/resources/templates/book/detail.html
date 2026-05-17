@@ -9,6 +9,9 @@
     <th:block layout:fragment="extra-head">
         <link rel="stylesheet" th:href="@{/css/empty-state.css}">
         <link rel="stylesheet" th:href="@{/css/book-detail.css}">
+        <script th:if="${kakaoMapConfigured}"
+                th:src="|https://dapi.kakao.com/v2/maps/sdk.js?appkey=${kakaoMapKey}&autoload=false|"
+                defer></script>
     </th:block>
 </head>
 <body>
@@ -20,6 +23,10 @@
     <script type="application/json" id="book-detail-libraries-data" th:utext="${librariesJson}">[]</script>
     <script type="application/json" id="book-review-edit-data" th:utext="${reviewsEditJson}">[]</script>
 
+    <p class="book-detail__alert book-detail__alert--error"
+       th:if="${!kakaoMapConfigured}">
+        카카오 지도 키가 없습니다. 프로젝트 루트 <code>.env</code>의 <code>KAKAO_MAP_JS_KEY</code>(JavaScript 키)를 넣고 앱을 완전히 재시작하세요.
+    </p>
     <p class="book-detail__alert book-detail__alert--error"
        th:if="${libraryError != null}"
        th:text="${libraryError}">도서관 오류</p>
@@ -151,32 +158,42 @@
 
             <div class="book-detail__biblio">
                 <p class="book-detail__section-label">BIBLIOGRAPHIC INFO</p>
-                <dl class="book-detail__biblio-grid">
-                    <div>
-                        <dt>저자</dt>
-                        <dd th:text="${book.bookWriter}">저자</dd>
+                <div class="book-detail__biblio-table">
+                    <div class="book-detail__biblio-row">
+                        <div class="book-detail__biblio-field book-detail__biblio-field--shade">
+                            <span class="book-detail__biblio-label">저자</span>
+                            <span class="book-detail__biblio-value" th:text="${book.bookWriter}">저자</span>
+                        </div>
+                        <div class="book-detail__biblio-field">
+                            <span class="book-detail__biblio-label">출판사</span>
+                            <span class="book-detail__biblio-value"
+                                  th:text="${book.bookCompany != null ? book.bookCompany : '—'}">출판사</span>
+                        </div>
                     </div>
-                    <div>
-                        <dt>출판사</dt>
-                        <dd th:text="${book.bookCompany != null ? book.bookCompany : '—'}">출판사</dd>
+                    <div class="book-detail__biblio-row">
+                        <div class="book-detail__biblio-field book-detail__biblio-field--shade">
+                            <span class="book-detail__biblio-label">출판연도</span>
+                            <span class="book-detail__biblio-value"
+                                  th:text="${book.bookYear != null ? book.bookYear.year : '—'}">연도</span>
+                        </div>
+                        <div class="book-detail__biblio-field">
+                            <span class="book-detail__biblio-label">ISBN</span>
+                            <span class="book-detail__biblio-value" th:text="${book.bookIsbn}">ISBN</span>
+                        </div>
                     </div>
-                    <div>
-                        <dt>출판연도</dt>
-                        <dd th:text="${book.bookYear != null ? book.bookYear.year : '—'}">연도</dd>
+                    <div class="book-detail__biblio-row book-detail__biblio-row--last">
+                        <div class="book-detail__biblio-field book-detail__biblio-field--shade">
+                            <span class="book-detail__biblio-label">장르</span>
+                            <span class="book-detail__biblio-value"
+                                  th:text="${book.bookGenre != null ? book.bookGenre : '—'}">장르</span>
+                        </div>
+                        <div class="book-detail__biblio-field">
+                            <span class="book-detail__biblio-label">쪽수</span>
+                            <span class="book-detail__biblio-value"
+                                  th:text="${book.bookPages > 0 ? book.bookPages + 'p' : '—'}">쪽수</span>
+                        </div>
                     </div>
-                    <div>
-                        <dt>ISBN</dt>
-                        <dd th:text="${book.bookIsbn}">ISBN</dd>
-                    </div>
-                    <div>
-                        <dt>장르</dt>
-                        <dd th:text="${book.bookGenre != null ? book.bookGenre : '—'}">장르</dd>
-                    </div>
-                    <div>
-                        <dt>쪽수</dt>
-                        <dd th:text="${book.bookPages > 0 ? book.bookPages + 'p' : '—'}">쪽수</dd>
-                    </div>
-                </dl>
+                </div>
             </div>
         </section>
 
@@ -189,6 +206,13 @@
                     <p class="book-detail__section-label">HOLDING LIBRARIES</p>
                     <h2 th:text="'보유 도서관 (총 ' + ${libraryCount} + '개)'">보유 도서관</h2>
                 </div>
+                <p th:if="${libraryApiWarning != null}"
+                   class="book-search__api-notice"
+                   role="alert"
+                   th:text="${libraryApiWarning}">API 안내</p>
+                <p th:if="${distanceHint != null and libraryApiWarning == null}"
+                   class="book-search__api-notice book-detail__distance-hint"
+                   th:text="${distanceHint}">거리 안내</p>
                 <div class="book-detail__lib-table">
                     <div class="book-detail__lib-thead">
                         <span>도서관명</span>
@@ -203,7 +227,13 @@
                                 <p class="book-detail__lib-name" th:text="${lib.libraryName}">도서관</p>
                                 <p class="book-detail__lib-addr" th:text="${lib.libraryAddr}">주소</p>
                             </div>
-                            <p class="book-detail__lib-distance">—</p>
+                            <p class="book-detail__lib-distance"
+                               th:if="${lib.distanceLabel != null}"
+                               th:text="${lib.distanceLabel}">1.2km</p>
+                            <p class="book-detail__lib-distance"
+                               th:unless="${lib.distanceLabel != null}"
+                               th:attr="title=${distanceHint}"
+                               th:text="'—'">—</p>
                             <p class="book-detail__lib-loan book-detail__lib-loan--ok"
                                th:if="${lib.loanAvailable == true}">대출 가능</p>
                             <p class="book-detail__lib-loan book-detail__lib-loan--no"

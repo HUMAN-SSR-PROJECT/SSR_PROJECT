@@ -11,8 +11,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import com.ssrpro.library.dto.response.PageResult;
+
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -180,10 +183,14 @@ public class MemberService {
         return memberDao.findById(id).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원 입니다."));
     }
 
-   // 관리자용 회원 목록 조회
-    public List<Members> getAllMembers(String keyword) {
-        // 키워드가 null이면 빈 문자열로 처리하여 전체 조회가 되도록 함
-        return memberDao.findAll(keyword == null ? "" : keyword);
+    /** 관리자 회원 목록 — 페이지당 {@link PageResult#DEFAULT_SIZE}건 */
+    public PageResult<Members> getMembersPaged(String keyword, int page) {
+        int safePage = Math.max(page, 1);
+        String trimmed = keyword == null ? "" : keyword.trim();
+        int offset = (safePage - 1) * PageResult.DEFAULT_SIZE;
+        long total = memberDao.countAll(trimmed);
+        List<Members> content = memberDao.findAllPaged(trimmed, offset, PageResult.DEFAULT_SIZE);
+        return PageResult.of(content, safePage, PageResult.DEFAULT_SIZE, total);
     }
 
     // 관리자 회원 상태 변경

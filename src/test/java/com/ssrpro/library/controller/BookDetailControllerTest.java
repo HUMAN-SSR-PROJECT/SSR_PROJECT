@@ -94,8 +94,12 @@ class BookDetailControllerTest {
     void bookDetail_get() throws Exception {
         when(bookService.getBookDetail(1L)).thenReturn(sampleBook);
         when(reviewService.findByBookId(eq(1L), any())).thenReturn(List.of());
-        when(libraryService.findLibrariesForBookDetail(any(BookDetailReq.class), eq("9788936434267")))
-                .thenReturn(List.of(LibraryRes.builder().libraryName("테스트 도서관").build()));
+        when(libraryService.findLibrariesForBookDetail(
+                        any(BookDetailReq.class), eq("9788936434267"), any()))
+                .thenReturn(new LibraryService.BookDetailLibrariesResult(
+                        List.of(LibraryRes.builder().libraryName("테스트 도서관").build()),
+                        null,
+                        null));
 
         mockMvc.perform(get("/book/detail/1"))
                 .andExpect(status().isOk())

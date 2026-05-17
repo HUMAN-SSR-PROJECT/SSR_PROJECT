@@ -23,7 +23,15 @@ public class GlobalModelAdvice {
 
     @ModelAttribute("kakaoMapKey")
     public String kakaoMapKey() {
-        return kakaoMapKey;
+        return kakaoMapKey == null ? "" : kakaoMapKey.trim();
+    }
+
+    @ModelAttribute("kakaoMapConfigured")
+    public boolean kakaoMapConfigured() {
+        String key = kakaoMapKey();
+        return key.length() >= 20
+                && !key.contains("${")
+                && !key.contains("KAKAO_MAP");
     }
 
     @ModelAttribute("headerProfile")

@@ -6,7 +6,7 @@
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    margin: 40px 0 0;
+    margin: 0;
     padding: 0;
     border: none;
     background: none;
@@ -31,7 +31,7 @@
 .book-detail__hero-inner {
     max-width: min(1280px, 100%);
     margin: 0 auto;
-    padding: 24px 40px 0;
+    padding: 40px 40px 0;
 }
 
 .book-detail__summary {
@@ -225,9 +225,8 @@
 .book-detail__panel {
     display: none;
     background: var(--surface);
-    border: 1px solid var(--line);
     margin-top: 0;
-    padding: 36px 40px 40px;
+    padding: 36px 40px 48px;
 }
 
 .book-detail__panel.is-active {
@@ -256,25 +255,47 @@
     border-top: 1px solid var(--line-soft);
 }
 
-.book-detail__biblio-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 20px 40px;
+.book-detail__biblio-table {
     margin-top: 20px;
+    border: 1px solid var(--line);
 }
 
-.book-detail__biblio dt {
-    margin: 0;
+.book-detail__biblio-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    border-bottom: 1px solid var(--line);
+}
+
+.book-detail__biblio-row--last {
+    border-bottom: none;
+}
+
+.book-detail__biblio-field {
+    display: grid;
+    gap: 6px;
+    padding: 16px 20px;
+    border-right: 1px solid var(--line);
+}
+
+.book-detail__biblio-field:last-child {
+    border-right: none;
+}
+
+.book-detail__biblio-field--shade {
+    background: #fdfcfa;
+}
+
+.book-detail__biblio-label {
     font-size: 10px;
     font-weight: 600;
     letter-spacing: 0.12em;
     color: var(--muted-light);
 }
 
-.book-detail__biblio dd {
-    margin: 6px 0 0;
+.book-detail__biblio-value {
     font-size: 14px;
     color: var(--ink);
+    line-height: 1.45;
 }
 
 /* Libraries tab */
@@ -394,8 +415,23 @@
 }
 
 .book-detail__map-canvas {
-    min-height: 200px;
+    min-height: 280px;
+    height: 280px;
     background: var(--line);
+}
+
+.book-detail__map-fallback {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 280px;
+    height: 100%;
+    margin: 0;
+    padding: 24px;
+    text-align: center;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--muted);
 }
 
 .book-detail__map-side {
@@ -841,7 +877,20 @@
         grid-template-columns: 1fr;
     }
 
-    .book-detail__biblio-grid {
+    .book-detail__biblio-row {
         grid-template-columns: 1fr;
+    }
+
+    .book-detail__biblio-field {
+        border-right: none;
+        border-bottom: 1px solid var(--line);
+    }
+
+    .book-detail__biblio-field:last-child {
+        border-bottom: none;
+    }
+
+    .book-detail__biblio-row--last .book-detail__biblio-field:last-child {
+        border-bottom: none;
     }
 }
