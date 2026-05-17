@@ -65,6 +65,18 @@ public class ReviewDao {
         review.getMemberId());
   }
 
+  // 관리자 리뷰 수정
+  public int adminUpdate(Review review) {
+    String sql = "UPDATE REVIEW " +
+        "SET REVIEW_COMMENT = ?, REVIEW_RATING = ?, " +
+        "REVIEW_UPDATED_AT = SYSDATE " +
+        "WHERE REVIEW_ID = ?";
+    return jdbcTemplate.update(sql,
+        review.getReviewComment(),
+        review.getReviewRating(),
+        review.getReviewId());
+  }
+
   // 리뷰 삭제 (본인 확인 - MEMBER_ID 조건 포함)
   public int delete(Long reviewId, Long memberId) {
     String sql = "DELETE FROM REVIEW WHERE REVIEW_ID = ? AND MEMBER_ID = ?";

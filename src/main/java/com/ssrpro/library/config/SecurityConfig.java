@@ -2,6 +2,7 @@ package com.ssrpro.library.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -24,7 +25,16 @@ public class SecurityConfig {
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         // 마이페이지는 로그인만 하면 ok
                         .requestMatchers("/member/mypage", "/member/update", "/mylib/**").authenticated()
-                        // 그 외(메인, 도서검색 등)는 비로그인도 가능
+                        // 도서 상세 — 로그인 필요 액션
+                        .requestMatchers(HttpMethod.POST,
+                                "/book/detail/*/readbook",
+                                "/book/detail/*/readSoon",
+                                "/book/detail/insert",
+                                "/book/detail/update",
+                                "/book/detail/delete/**",
+                                "/book/detail/like/**").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/book/detail/admin/delete/**").hasRole("ADMIN")
+                        // 그 외(메인, 도서검색, 상세 조회 등)는 비로그인도 가능
                         .anyRequest().permitAll()
                 )
                 // 2. 로그인 설정

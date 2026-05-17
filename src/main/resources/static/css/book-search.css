@@ -538,6 +538,14 @@
     background: #b42318;
 }
 
+.book-search__badge--holding {
+    color: var(--ink-soft);
+}
+
+.book-search__badge--holding::before {
+    background: var(--ink-soft);
+}
+
 .book-search__holdings {
     margin: 0;
     font-size: 11px;

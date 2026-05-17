@@ -25,6 +25,7 @@ import java.util.Map;
 public class LibraryService {
 
     private static final String LIB_SRCH_URL = "http://data4library.kr/api/libSrch";
+    private static final String SRCH_BOOKS_URL = "http://data4library.kr/api/srchBooks";
     private static final int SYNC_PAGE_SIZE = 100;
 
     private final LibraryDao libraryDao;
@@ -46,6 +47,21 @@ public class LibraryService {
         return rawList.stream()
                 .map(LibraryRes::of)
                 .toList();
+    }
+
+    /**
+     * 상세 페이지 — DB 도서관 정보 + 정보나루 srchBooks로 도서관별 대출 가능 여부
+     */
+    public List<LibraryRes> findLibrariesForBookDetail(BookDetailReq req, String isbn) {
+        List<LibraryRes> libraries = findByLibraryCode(req);
+        if (isbn == null || isbn.isBlank()) {
+            return libraries;
+        }
+        String isbn13 = isbn.replaceAll("[^0-9]", "");
+        for (LibraryRes library : libraries) {
+            library.setLoanAvailable(fetchLoanAvailable(library.getLibraryCode(), isbn13));
+        }
+        return libraries;
     }
 
     /**
@@ -224,5 +240,89 @@ public class LibraryService {
 
     public int countAllLibrary() {
         return libraryDao.countAllLibrary();
+    }
+
+    @SuppressWarnings("unchecked")
+    private Boolean fetchLoanAvailable(Long libCode, String isbn13) {
+        if (libCode == null || isbn13 == null || isbn13.isBlank()) {
+            return null;
+        }
+        URI targetUrl = UriComponentsBuilder
+                .fromHttpUrl(SRCH_BOOKS_URL)
+                .queryParam("authKey", authKey)
+                .queryParam("libCode", libCode)
+                .queryParam("isbn13", isbn13)
+                .queryParam("format", "json")
+                .build()
+                .encode()
+                .toUri();
+        try {
+            Map<String, Object> body = restTemplate.getForObject(targetUrl, Map.class);
+            if (body == null || !body.containsKey("response")) {
+                return null;
+            }
+            return parseLoanFromResponse((Map<String, Object>) body.get("response"));
+        } catch (Exception e) {
+            System.err.println("[Library] 대출 여부 조회 실패 libCode=" + libCode + ": " + e.getMessage());
+            return null;
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private Boolean parseLoanFromResponse(Map<String, Object> response) {
+        if (response.containsKey("error")) {
+            return null;
+        }
+        if (!response.containsKey("docs")) {
+            return false;
+        }
+        List<Map<String, Object>> docs = extractDocList(response.get("docs"));
+        if (docs.isEmpty()) {
+            return false;
+        }
+        Object loan = docs.get(0).get("loanavailable");
+        if (loan == null) {
+            loan = docs.get(0).get("loanAvailable");
+        }
+        if (loan == null) {
+            return null;
+        }
+        String value = String.valueOf(loan).trim().toUpperCase();
+        if ("Y".equals(value) || "1".equals(value) || "TRUE".equals(value)) {
+            return true;
+        }
+        if ("N".equals(value) || "0".equals(value) || "FALSE".equals(value)) {
+            return false;
+        }
+        return null;
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<Map<String, Object>> extractDocList(Object docsNode) {
+        List<Map<String, Object>> result = new ArrayList<>();
+        if (docsNode instanceof List<?> docsList) {
+            for (Object wrapper : docsList) {
+                addDocFromWrapper(wrapper, result);
+            }
+        } else if (docsNode instanceof Map<?, ?> docsMap) {
+            addDocFromWrapper(docsMap, result);
+        }
+        return result;
+    }
+
+    @SuppressWarnings("unchecked")
+    private void addDocFromWrapper(Object wrapper, List<Map<String, Object>> result) {
+        if (wrapper instanceof Map<?, ?> docWrapper && docWrapper.containsKey("doc")) {
+            Object docNode = docWrapper.get("doc");
+            if (docNode instanceof Map<?, ?> docMap) {
+                result.add((Map<String, Object>) docMap);
+            } else if (docNode instanceof List<?> docList) {
+                for (Object item : docList) {
+                    if (item instanceof Map<?, ?> map) {
+                        result.add((Map<String, Object>) map);
+                    }
+                }
+            }
+        }
     }
 }

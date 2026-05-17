@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}"
+      lang="ko">
+<head>
+    <title>REF · Empty — 완독</title>
+    <th:block layout:fragment="extra-head">
+        <link rel="stylesheet" th:href="@{/css/empty-state.css}">
+    </th:block>
+</head>
+<body>
+<div layout:fragment="content" class="ref-empty-preview">
+    <p class="ref-empty-preview__meta">
+        <strong>완독</strong><br>
+        Fragment: <code>fragments/empty-state :: mylib-completed</code><br>
+        조건: <code>readedList</code>
+    </p>
+    <div class="ref-empty-preview__frame" th:replace="~{fragments/empty-state :: mylib-completed}"></div>
+</div>
+</body>
+</html>

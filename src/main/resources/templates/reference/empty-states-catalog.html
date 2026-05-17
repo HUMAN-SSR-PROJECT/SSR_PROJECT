@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}"
+      lang="ko">
+<head>
+    <title>빈 상태 디자인 레퍼런스</title>
+    <th:block layout:fragment="extra-head">
+        <link rel="stylesheet" th:href="@{/css/empty-state.css}">
+    </th:block>
+</head>
+<body>
+<div layout:fragment="content" class="ref-empty-catalog">
+    <header class="ref-empty-catalog__head">
+        <p class="ref-empty-catalog__eyebrow">DEVELOPER REFERENCE</p>
+        <h1 class="ref-empty-catalog__title">빈 상태 디자인 레퍼런스</h1>
+        <p class="ref-empty-catalog__desc">
+            Figma
+            <a href="https://www.figma.com/design/V2IM4n1t0PfNrqr7hHS1oy/ssrproject?node-id=1-3166"
+               target="_blank"
+               rel="noopener noreferrer">node 1:3166</a>
+            기준. 실제 페이지에서는 목록이 비었을 때 아래 fragment를 사용합니다.
+        </p>
+    </header>
+
+    <section class="ref-empty-catalog__section">
+        <h2 class="ref-empty-catalog__section-title">내 서재</h2>
+        <ul class="ref-empty-catalog__list">
+            <li><a th:href="@{/reference/empty-states/mylib-reading}">읽는 중 — 책 없을 때</a></li>
+            <li><a th:href="@{/reference/empty-states/mylib-wishlist}">읽을 책 — 책 없을 때</a></li>
+            <li><a th:href="@{/reference/empty-states/mylib-completed}">완독 — 책 없을 때</a></li>
+        </ul>
+    </section>
+
+    <section class="ref-empty-catalog__section">
+        <h2 class="ref-empty-catalog__section-title">도서 상세 · 독서 통계</h2>
+        <ul class="ref-empty-catalog__list">
+            <li><a th:href="@{/reference/empty-states/book-detail-reviews}">리뷰 — 데이터 없을 때</a></li>
+            <li><a th:href="@{/reference/empty-states/stats}">통계 — 완독 기록 없을 때</a></li>
+        </ul>
+    </section>
+
+    <section class="ref-empty-catalog__section">
+        <h2 class="ref-empty-catalog__section-title">관리자</h2>
+        <ul class="ref-empty-catalog__list">
+            <li><a th:href="@{/reference/empty-states/admin-dashboard-members}">대시보드 — 최근 가입 회원</a></li>
+            <li><a th:href="@{/reference/empty-states/admin-dashboard-books}">대시보드 — 최근 등록 도서</a></li>
+            <li><a th:href="@{/reference/empty-states/admin-members-list}">회원관리 — 회원 없을 때</a></li>
+            <li><a th:href="@{/reference/empty-states/admin-members-search}">회원관리 — 검색 결과 없음</a></li>
+            <li><a th:href="@{/reference/empty-states/admin-books-list}">도서관리 — 도서 없을 때</a></li>
+            <li><a th:href="@{/reference/empty-states/admin-books-search}">도서관리 — 검색 결과 없음</a></li>
+        </ul>
+    </section>
+
+    <section class="ref-empty-catalog__section">
+        <h2 class="ref-empty-catalog__section-title">도서 검색</h2>
+        <ul class="ref-empty-catalog__list">
+            <li><a th:href="@{/reference/empty-states/book-search-results}">검색 결과 없음</a></li>
+        </ul>
+    </section>
+
+    <p class="ref-empty-catalog__note">
+        공통 fragment: <code>fragments/empty-state.html</code> · 스타일: <code>static/css/empty-state.css</code>
+    </p>
+</div>
+</body>
+</html>

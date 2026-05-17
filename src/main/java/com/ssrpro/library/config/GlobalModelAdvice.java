@@ -3,6 +3,7 @@ package com.ssrpro.library.config;
 import com.ssrpro.library.dto.security.CustomUser;
 import com.ssrpro.library.service.ReadBookService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -12,6 +13,14 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 public class GlobalModelAdvice {
 
     private final ReadBookService readBookService;
+
+    @Value("${kakao.map.key}")
+    private String kakaoMapKey;
+
+    @ModelAttribute("kakaoMapKey")
+    public String kakaoMapKey() {
+        return kakaoMapKey;
+    }
 
     @ModelAttribute("readingCount")
     public int readingCount(@AuthenticationPrincipal CustomUser user) {

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}"
+      lang="ko">
+<head>
+    <title>REF · Empty — 독서 통계</title>
+    <th:block layout:fragment="extra-head">
+        <link rel="stylesheet" th:href="@{/css/empty-state.css}">
+    </th:block>
+</head>
+<body>
+<div layout:fragment="content" class="ref-empty-preview">
+    <p class="ref-empty-preview__meta">
+        <strong>독서 통계</strong><br>
+        Fragment: <code>fragments/empty-state :: stats</code><br>
+        조건: <code>rawDate empty</code>
+    </p>
+    <div class="ref-empty-preview__frame" th:replace="~{fragments/empty-state :: stats}"></div>
+</div>
+</body>
+</html>

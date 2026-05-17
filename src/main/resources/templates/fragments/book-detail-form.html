@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<th:block th:fragment="library-codes">
+    <th:block th:if="${bookDetailReq != null and bookDetailReq.libraryCodes != null}"
+              th:each="code : ${bookDetailReq.libraryCodes}">
+        <input type="hidden" name="libraryCodes" th:value="${code}">
+    </th:block>
+</th:block>
+</body>
+</html>

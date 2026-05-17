@@ -31,9 +31,10 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
         }
 
         SavedRequest savedRequest = requestCache.getRequest(request, response);
-        String redirectUrl = savedRequest != null
-                ? savedRequest.getRedirectUrl()
-                : request.getContextPath() + "/";
+        String redirectUrl = request.getContextPath() + "/";
+        if (savedRequest != null && "GET".equalsIgnoreCase(savedRequest.getMethod())) {
+            redirectUrl = savedRequest.getRedirectUrl();
+        }
         response.sendRedirect(redirectUrl);
     }
 }

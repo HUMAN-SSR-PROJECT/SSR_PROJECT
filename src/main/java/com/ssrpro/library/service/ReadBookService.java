@@ -19,6 +19,15 @@ import lombok.RequiredArgsConstructor;
 public class ReadBookService {
   private final ReadBookDao readBookDao;
 
+  /** 1: 없음, 2: 읽는 중, 3: 완독 */
+  public int readingState(Long memberId, Long bookId) {
+    return readBookDao.isReadBookDuplicate(memberId, bookId);
+  }
+
+  public boolean isReadSoon(Long memberId, Long bookId) {
+    return readBookDao.isReadSoonDuplicate(memberId, bookId);
+  }
+
   // 읽을 책 추가 / 삭제
   @Transactional
   public boolean addToReadSoon(Long memberId, Long bookId) {

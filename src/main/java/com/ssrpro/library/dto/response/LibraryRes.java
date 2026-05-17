@@ -10,14 +10,17 @@ import lombok.*;
 @NoArgsConstructor
 @Builder
 public class LibraryRes {
+    private Long libraryCode;
     private String libraryName;
     private String libraryAddr;
-    // 추후 API 및 로직 으로 인해 추가예정
     private Double libraryLat;
     private Double libraryLon;
+    /** null: API 확인 불가, true/false: 대출 가능 여부 */
+    private Boolean loanAvailable;
 
-    public static LibraryRes of(Library library){
+    public static LibraryRes of(Library library) {
         return LibraryRes.builder()
+                .libraryCode(library.getLibraryCode())
                 .libraryName(library.getLibraryName())
                 .libraryAddr(library.getLibraryAddr())
                 .libraryLat(library.getLibraryLat())
