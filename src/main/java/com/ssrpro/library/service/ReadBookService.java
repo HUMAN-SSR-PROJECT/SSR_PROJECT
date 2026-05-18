@@ -216,7 +216,7 @@ public class ReadBookService {
     if (end.isBefore(start)) {
       return 0;
     }
-    return ChronoUnit.DAYS.between(start, end);
+    return ChronoUnit.DAYS.between(start, end) + 1;
   }
 
   private static List<Integer> buildYAxisTicks(int chartMax) {
