@@ -558,6 +558,14 @@ button {
     list-style: none;
 }
 
+.pagination__summary {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: 0.02em;
+    padding: 0 4px;
+}
+
 .pagination__btn,
 .pagination__num {
     display: inline-flex;
