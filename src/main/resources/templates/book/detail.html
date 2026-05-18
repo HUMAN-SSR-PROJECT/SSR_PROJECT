@@ -321,8 +321,14 @@
                 <article class="book-detail__review-item" th:each="item : ${reviews}">
                     <div>
                         <div class="book-detail__review-author">
-                            <span class="book-detail__review-avatar"
-                                  th:text="${item.memberNickname != null and !item.memberNickname.isEmpty() ? #strings.substring(item.memberNickname, 0, 1) : '?'}">김</span>
+                            <span class="book-detail__review-avatar">
+                                <img th:if="${item.memberImgUrl != null and !item.memberImgUrl.isEmpty()}"
+                                     th:src="${item.memberImgUrl}"
+                                     th:alt="${item.memberNickname != null ? item.memberNickname + ' 프로필' : '프로필'}"
+                                     class="book-detail__review-avatar-img">
+                                <span th:unless="${item.memberImgUrl != null and !item.memberImgUrl.isEmpty()}"
+                                      th:text="${item.memberNickname != null and !item.memberNickname.isEmpty() ? #strings.substring(item.memberNickname, 0, 1) : '?'}">김</span>
+                            </span>
                             <div>
                                 <p class="book-detail__review-nick" th:text="${item.memberNickname}">닉네임</p>
                                 <div class="book-detail__rating">
