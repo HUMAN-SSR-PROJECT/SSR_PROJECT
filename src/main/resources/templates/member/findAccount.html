@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}"
+      lang="ko">
+<head>
+    <title>아이디 · 비밀번호 찾기</title>
+    <th:block layout:fragment="extra-head">
+        <link rel="stylesheet" th:href="@{/css/member-auth.css}">
+    </th:block>
+</head>
+<body>
+<div layout:fragment="content">
+    <section class="auth" data-find-account aria-labelledby="auth-find-title">
+        <header class="auth__head">
+            <h1 id="auth-find-title" class="auth__title auth__title--find">FIND ACCOUNT</h1>
+            <p class="auth__subtitle">Digital Editorial Reading Log System</p>
+        </header>
+
+        <div class="auth__tabs" role="tablist" aria-label="계정 찾기">
+            <button type="button"
+                    class="auth__tab"
+                    role="tab"
+                    data-find-tab="id"
+                    th:classappend="${tab != 'pw'} ? ' is-active' : ''"
+                    th:attr="aria-selected=${tab != 'pw'}">아이디 찾기</button>
+            <button type="button"
+                    class="auth__tab"
+                    role="tab"
+                    data-find-tab="pw"
+                    th:classappend="${tab == 'pw'} ? ' is-active' : ''"
+                    th:attr="aria-selected=${tab == 'pw'}">비밀번호 찾기</button>
+        </div>
+
+        <div class="auth__panel"
+             data-find-panel="id"
+             role="tabpanel"
+             th:hidden="${tab == 'pw'}">
+            <form class="auth__form"
+                  th:action="@{/member/find-id}"
+                  method="post"
+                  data-find-form="id"
+                  novalidate>
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                <input type="hidden" name="birth" data-birth-hidden value="">
+
+                <div class="auth__field">
+                    <label class="visually-hidden" for="find-id-name">이름</label>
+                    <input id="find-id-name" class="auth__input" type="text" name="name" placeholder="REAL NAME" autocomplete="name" required>
+                    <span class="auth__icon" aria-hidden="true">
+                        <svg viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="7.5" cy="5" r="2.5" stroke="currentColor" stroke-width="1.1"/>
+                            <path d="M3 13C3 10.5 5 9 7.5 9C10 9 12 10.5 12 13" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+                        </svg>
+                    </span>
+                </div>
+
+                <div class="auth__field">
+                    <label class="visually-hidden" for="find-id-birth">생년월일</label>
+                    <input id="find-id-birth"
+                           class="auth__input auth__input--birth"
+                           type="text"
+                           inputmode="numeric"
+                           data-birth-input
+                           placeholder="BIRTHDATE (EX. 19970701)"
+                           maxlength="8"
+                           required>
+                    <span class="auth__icon" aria-hidden="true">
+                        <svg viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="2" y="3" width="11" height="10" rx="1" stroke="currentColor" stroke-width="1.1"/>
+                            <path d="M2 6H13M5 1.5V4M10 1.5V4" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+                        </svg>
+                    </span>
+                </div>
+
+                <button type="submit" class="auth__submit">
+                    아이디 찾기
+                    <span class="auth__submit-icon" aria-hidden="true">
+                        <svg viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="6" cy="6" r="4" stroke="currentColor" stroke-width="1.2"/>
+                            <path d="M9 9L12.5 12.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+                        </svg>
+                    </span>
+                </button>
+
+                <div class="auth__result auth__result--success" th:if="${findIdStatus == 'success'}">
+                    <p class="auth__result-label">조회된 아이디</p>
+                    <p class="auth__result-value" th:text="${maskedEmail}">reade*****</p>
+                    <p class="auth__result-note">보안을 위해 일부 문자가 마스킹 처리됩니다.</p>
+                </div>
+
+                <div class="auth__result auth__result--fail" th:if="${findIdStatus == 'fail'}">
+                    <p class="auth__result-label">조회 결과</p>
+                    <p class="auth__result-value auth__result-value--fail">일치하는 계정이 없습니다.</p>
+                    <p class="auth__result-note">입력하신 정보를 다시 확인해 주세요.</p>
+                </div>
+            </form>
+        </div>
+
+        <div class="auth__panel"
+             data-find-panel="pw"
+             role="tabpanel"
+             th:hidden="${tab != 'pw'}">
+            <form class="auth__form"
+                  th:action="@{/member/find-pw}"
+                  method="post"
+                  data-find-form="pw"
+                  novalidate>
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                <input type="hidden" name="birth" data-birth-hidden value="">
+
+                <div class="auth__field">
+                    <label class="visually-hidden" for="find-pw-email">이메일</label>
+                    <input id="find-pw-email" class="auth__input" type="email" name="email" placeholder="EMAIL ADDRESS" autocomplete="email" required>
+                    <span class="auth__icon" aria-hidden="true">
+                        <svg viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="1" y="3" width="13" height="9" rx="1" stroke="currentColor" stroke-width="1.1"/>
+                            <path d="M1 4.5L7.5 9L14 4.5" stroke="currentColor" stroke-width="1.1"/>
+                        </svg>
+                    </span>
+                </div>
+
+                <div class="auth__field">
+                    <label class="visually-hidden" for="find-pw-name">이름</label>
+                    <input id="find-pw-name" class="auth__input" type="text" name="name" placeholder="REAL NAME" autocomplete="name" required>
+                    <span class="auth__icon" aria-hidden="true">
+                        <svg viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="7.5" cy="5" r="2.5" stroke="currentColor" stroke-width="1.1"/>
+                            <path d="M3 13C3 10.5 5 9 7.5 9C10 9 12 10.5 12 13" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+                        </svg>
+                    </span>
+                </div>
+
+                <div class="auth__field">
+                    <label class="visually-hidden" for="find-pw-birth">생년월일</label>
+                    <input id="find-pw-birth"
+                           class="auth__input auth__input--birth"
+                           type="text"
+                           inputmode="numeric"
+                           data-birth-input
+                           placeholder="BIRTHDATE (EX. 19970701)"
+                           maxlength="8"
+                           required>
+                    <span class="auth__icon" aria-hidden="true">
+                        <svg viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="2" y="3" width="11" height="10" rx="1" stroke="currentColor" stroke-width="1.1"/>
+                            <path d="M2 6H13M5 1.5V4M10 1.5V4" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+                        </svg>
+                    </span>
+                </div>
+
+                <button type="submit" class="auth__submit">
+                    임시 비밀번호 발송
+                    <span class="auth__submit-icon" aria-hidden="true">
+                        <svg viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M1 7H12M12 7L8 3M12 7L8 11" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </span>
+                </button>
+
+                <div class="auth__result auth__result--success" th:if="${findPwStatus == 'success'}">
+                    <p class="auth__result-label">임시 비밀번호 발송 완료</p>
+                    <p class="auth__result-value auth__result-value--sm" th:text="${findPwEmail}">reader@example.com</p>
+                    <div class="auth__result-note">
+                        <p>위 이메일로 임시 비밀번호가 발송되었습니다.</p>
+                        <p>로그인 후 반드시 비밀번호를 변경해 주세요.</p>
+                    </div>
+                </div>
+
+                <div class="auth__result auth__result--fail" th:if="${findPwStatus == 'fail'}">
+                    <p class="auth__result-label">조회 결과</p>
+                    <p class="auth__result-value auth__result-value--fail">일치하는 계정이 없습니다.</p>
+                    <p class="auth__result-note">입력하신 정보를 다시 확인해 주세요.</p>
+                </div>
+            </form>
+        </div>
+
+        <p class="auth__footer">
+            <a class="auth__link auth__link--muted" th:href="@{/member/login}">로그인으로 돌아가기</a>
+        </p>
+    </section>
+</div>
+<th:block layout:fragment="extra-scripts">
+    <script th:src="@{/js/member-auth.js}"></script>
+</th:block>
+</body>
+</html>

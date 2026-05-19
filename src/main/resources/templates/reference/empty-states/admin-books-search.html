@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}"
+      lang="ko">
+<head>
+    <title>REF · Empty — 도서 검색 없음</title>
+    <th:block layout:fragment="extra-head">
+        <link rel="stylesheet" th:href="@{/css/empty-state.css}">
+    </th:block>
+</head>
+<body>
+<div layout:fragment="content" class="ref-empty-preview" th:with="keyword='한강'">
+    <p class="ref-empty-preview__meta">
+        <strong>관리자 도서관리 · 검색 결과 없음</strong><br>
+        Fragment: <code>fragments/empty-state :: admin-books-search</code><br>
+        모델: <code>keyword</code> (검색어)
+    </p>
+    <div class="ref-empty-preview__frame" th:replace="~{fragments/empty-state :: admin-books-search}"></div>
+</div>
+</body>
+</html>

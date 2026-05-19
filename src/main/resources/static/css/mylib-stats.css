@@ -1,0 +1,539 @@
+/* 독서 통계 — Figma 1:1200 */
+
+.mylib-stats {
+    background: var(--surface-warm);
+}
+
+/* Hero */
+.mylib-stats__hero {
+    background: var(--surface);
+    border-bottom: 1px solid var(--line);
+}
+
+.mylib-stats__hero-inner {
+    max-width: min(1020px, 100%);
+    margin: 0 auto;
+    padding: 56px 40px 48px;
+}
+
+.mylib-stats__eyebrow {
+    margin: 0 0 16px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.3em;
+    color: var(--muted-light);
+}
+
+.mylib-stats__title {
+    margin: 0 0 28px;
+    font-family: var(--font-serif);
+    font-size: clamp(32px, 4.5vw, 46px);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+}
+
+.mylib-stats__quote {
+    margin: 0;
+    max-width: 560px;
+    padding-left: 23px;
+    border-left: 3px solid var(--ink);
+    font-family: Georgia, "Noto Serif KR", serif;
+    font-style: italic;
+    font-size: 13px;
+    line-height: 1.75;
+    color: var(--muted);
+}
+
+/* Empty */
+.mylib-stats__empty-wrap {
+    max-width: min(1020px, 100%);
+    margin: 0 auto;
+    padding: 48px 40px 80px;
+}
+
+.mylib-stats__empty-cta {
+    margin: 24px 0 0;
+    text-align: center;
+    font-size: 13px;
+}
+
+.mylib-stats__empty-cta a {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+/* Summary metrics */
+.mylib-stats__metrics {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    max-width: min(1020px, 100%);
+    margin: 0 auto;
+    background: var(--surface);
+    border-bottom: 1px solid var(--line);
+}
+
+.mylib-stats__metric {
+    padding: 32px 40px 36px;
+    border-right: 1px solid var(--line);
+}
+
+.mylib-stats__metric:last-child {
+    border-right: none;
+}
+
+.mylib-stats__metric-icon {
+    display: block;
+    margin-bottom: 12px;
+    color: var(--ink);
+}
+
+.mylib-stats__metric-label {
+    margin: 0 0 8px;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--muted-light);
+}
+
+.mylib-stats__metric-value {
+    margin: 0;
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    font-size: clamp(40px, 6vw, 62px);
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: -0.03em;
+}
+
+.mylib-stats__metric-unit {
+    margin-bottom: 8px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    color: var(--muted-light);
+}
+
+/* Panels */
+.mylib-stats__panel {
+    max-width: min(1020px, 100%);
+    margin: 0 auto;
+    padding: 48px 40px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--line);
+}
+
+.mylib-stats__panel-head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 40px;
+}
+
+.mylib-stats__panel-title {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-size: 30px;
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+}
+
+.mylib-stats__panel-tag {
+    margin: 0;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.25em;
+    color: #d4cfc8;
+    white-space: nowrap;
+}
+
+.mylib-stats__panel-tag--left {
+    margin-bottom: 8px;
+}
+
+.mylib-stats__panel-subtitle {
+    margin: 0 0 32px;
+    font-family: var(--font-serif);
+    font-size: 18px;
+    font-weight: 900;
+    letter-spacing: -0.02em;
+}
+
+/* Monthly bar chart */
+.mylib-stats__chart {
+    display: grid;
+    grid-template-columns: 48px 1fr;
+    gap: 8px 12px;
+    min-height: 320px;
+}
+
+.mylib-stats__chart-y {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding-bottom: 28px;
+    font-size: 12px;
+    color: var(--muted-light);
+}
+
+.mylib-stats__chart-main {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-height: 300px;
+}
+
+.mylib-stats__chart-grid {
+    position: absolute;
+    inset: 0 0 28px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    pointer-events: none;
+}
+
+.mylib-stats__chart-gridline {
+    display: block;
+    height: 1px;
+    background: var(--line-soft);
+}
+
+.mylib-stats__chart-bars {
+    position: relative;
+    z-index: 1;
+    flex: 1;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-around;
+    gap: 8px;
+    padding-bottom: 28px;
+    min-height: 272px;
+}
+
+.mylib-stats__bar-col {
+    flex: 1;
+    max-width: 120px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+    min-height: 240px;
+}
+
+.mylib-stats__bar-value {
+    margin-bottom: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--muted);
+}
+
+.mylib-stats__bar-track {
+    flex: 1;
+    width: 100%;
+    max-width: 72px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+}
+
+.mylib-stats__bar-fill {
+    width: 100%;
+    min-height: 2px;
+    background: var(--ink);
+    transition: height 0.2s ease;
+}
+
+.mylib-stats__bar-label {
+    margin-top: 10px;
+    font-size: 12px;
+    color: var(--muted);
+    text-align: center;
+    white-space: nowrap;
+}
+
+/* Split: genre + rating */
+.mylib-stats__split {
+    max-width: min(1020px, 100%);
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    background: var(--surface-warm);
+}
+
+.mylib-stats__panel--genre,
+.mylib-stats__panel--rating {
+    margin: 0;
+    border-bottom: none;
+}
+
+.mylib-stats__panel--genre {
+    border-right: 1px solid var(--line);
+    border-top: 2px solid var(--ink);
+}
+
+.mylib-stats__panel--rating {
+    border-top: 2px solid var(--ink);
+}
+
+.mylib-stats__genre-body {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
+.mylib-stats__donut {
+    flex-shrink: 0;
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    position: relative;
+}
+
+.mylib-stats__donut-hole {
+    position: absolute;
+    inset: 17%;
+    border-radius: 50%;
+    background: var(--surface);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+}
+
+.mylib-stats__donut-total {
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.mylib-stats__donut-label {
+    font-size: 7px;
+    letter-spacing: 0.12em;
+    color: var(--muted-light);
+}
+
+.mylib-stats__genre-list {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.mylib-stats__genre-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 12px;
+}
+
+.mylib-stats__genre-name {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    color: var(--ink-soft);
+}
+
+.mylib-stats__genre-swatch {
+    width: 8px;
+    height: 8px;
+    flex-shrink: 0;
+}
+
+.mylib-stats__genre-count {
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.mylib-stats__genre-bar {
+    height: 3px;
+    background: var(--line-soft);
+    overflow: hidden;
+}
+
+.mylib-stats__genre-bar span {
+    display: block;
+    height: 100%;
+    min-width: 0;
+}
+
+/* Rating bars */
+.mylib-stats__rating-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.mylib-stats__rating-row {
+    display: grid;
+    grid-template-columns: 36px 1fr 24px;
+    align-items: center;
+    gap: 12px;
+    font-size: 12px;
+}
+
+.mylib-stats__rating-stars {
+    color: var(--ink-soft);
+}
+
+.mylib-stats__rating-bar {
+    height: 8px;
+    background: var(--line-soft);
+    overflow: hidden;
+}
+
+.mylib-stats__rating-bar span {
+    display: block;
+    height: 100%;
+    background: var(--ink);
+    min-width: 0;
+}
+
+.mylib-stats__rating-count {
+    font-weight: 700;
+    text-align: right;
+}
+
+.mylib-stats__rating-avg {
+    margin: 32px 0 0;
+    padding-top: 24px;
+    border-top: 1px solid var(--line);
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    font-size: 28px;
+    font-weight: 900;
+    letter-spacing: -0.02em;
+}
+
+.mylib-stats__rating-avg span:last-child {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    color: var(--muted-light);
+}
+
+/* Recent log table */
+.mylib-stats__panel--log {
+    border-top: 1px solid var(--line);
+}
+
+.mylib-stats__table-wrap {
+    overflow-x: auto;
+}
+
+.mylib-stats__table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.mylib-stats__table th {
+    padding: 0 0 16px;
+    text-align: left;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    color: var(--muted-light);
+    border-bottom: 1px solid var(--line);
+}
+
+.mylib-stats__table th:last-child,
+.mylib-stats__table td:last-child {
+    text-align: right;
+}
+
+.mylib-stats__table td {
+    padding: 18px 0;
+    border-bottom: 1px solid var(--line-soft);
+    vertical-align: middle;
+}
+
+.mylib-stats__book-title {
+    font-weight: 700;
+}
+
+.mylib-stats__book-writer {
+    color: var(--muted);
+    font-weight: 400;
+}
+
+.mylib-stats__book-date {
+    color: var(--muted);
+    white-space: nowrap;
+}
+
+.mylib-card__stars {
+    display: inline-flex;
+    gap: 2px;
+    align-items: center;
+}
+
+.mylib-stats__table .mylib-card__stars {
+    justify-content: flex-end;
+}
+
+.mylib-stats__table .mylib-card__stars svg {
+    color: var(--line);
+}
+
+.mylib-stats__table .mylib-card__stars svg.is-filled {
+    color: var(--ink);
+}
+
+@media (max-width: 900px) {
+    .mylib-stats__hero-inner,
+    .mylib-stats__panel,
+    .mylib-stats__empty-wrap {
+        padding-left: 24px;
+        padding-right: 24px;
+    }
+
+    .mylib-stats__metrics {
+        grid-template-columns: 1fr;
+    }
+
+    .mylib-stats__metric {
+        border-right: none;
+        border-bottom: 1px solid var(--line);
+    }
+
+    .mylib-stats__metric:last-child {
+        border-bottom: none;
+    }
+
+    .mylib-stats__split {
+        grid-template-columns: 1fr;
+    }
+
+    .mylib-stats__panel--genre {
+        border-right: none;
+        border-bottom: 1px solid var(--line);
+    }
+
+    .mylib-stats__genre-body {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .mylib-stats__donut {
+        margin: 0 auto;
+    }
+
+    .mylib-stats__bar-label {
+        font-size: 10px;
+        white-space: normal;
+    }
+}

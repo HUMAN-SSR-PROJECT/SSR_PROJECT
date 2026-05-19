@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}"
+      lang="ko">
+<head>
+    <title>회원 관리</title>
+    <th:block layout:fragment="extra-head">
+        <link rel="stylesheet" th:href="@{/css/admin.css}">
+        <link rel="stylesheet" th:href="@{/css/empty-state.css}">
+    </th:block>
+</head>
+<body>
+<div layout:fragment="content" class="admin" data-admin>
+    <div class="admin__shell">
+        <aside th:replace="~{fragments/admin-sidebar :: sidebar(${activeNav})}"></aside>
+        <main class="admin__main">
+            <header class="admin__head">
+                <span class="admin__head-icon" aria-hidden="true">
+                    <svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3.5" stroke="currentColor"/><path d="M4 17C4 13.5 6.5 12 10 12C13.5 12 16 13.5 16 17" stroke="currentColor" stroke-linecap="round"/></svg>
+                </span>
+                <h1 class="admin__title">회원 관리</h1>
+            </header>
+
+            <div class="admin-toolbar">
+                <p class="admin-toolbar__count">
+                    <span th:if="${keyword == null or keyword.isEmpty()}">총 </span>
+                    <span th:if="${keyword != null and !keyword.isEmpty()}">검색 </span>
+                    <strong th:text="${listCount != null ? listCount : 0}">0</strong>명
+                    <span th:if="${pageResult != null and pageResult.totalPages > 1}"
+                          th:text="${' · ' + pageResult.page + ' / ' + pageResult.totalPages + ' 페이지'}"></span>
+                </p>
+                <form class="admin-search" th:action="@{/admin/members}" method="get" role="search">
+                    <input class="admin-search__input"
+                           type="search"
+                           name="keyword"
+                           th:value="${keyword}"
+                           placeholder="이름, 닉네임, 이메일, 회원 ID 검색"
+                           aria-label="회원 검색">
+                    <button class="admin-search__btn" type="submit">검색</button>
+                </form>
+            </div>
+
+            <th:block th:if="${totalCount == 0}">
+                <div th:replace="~{fragments/empty-state :: admin-members-list}"></div>
+            </th:block>
+
+            <th:block th:if="${totalCount > 0 and listCount == 0 and keyword != null and !keyword.isEmpty()}">
+                <div th:replace="~{fragments/empty-state :: admin-members-search}"></div>
+            </th:block>
+
+            <th:block th:if="${totalCount > 0 and listCount > 0}">
+                <div class="admin-table-wrap">
+                    <table class="admin-table">
+                        <colgroup>
+                            <col class="col-id">
+                            <col class="col-name">
+                            <col class="col-nick">
+                            <col class="col-email">
+                            <col class="col-joined">
+                            <col class="col-state">
+                            <col class="col-actions">
+                        </colgroup>
+                        <thead>
+                        <tr>
+                            <th scope="col">MEMBER ID</th>
+                            <th scope="col">이름</th>
+                            <th scope="col">닉네임</th>
+                            <th scope="col">이메일</th>
+                            <th scope="col">가입일</th>
+                            <th scope="col">상태</th>
+                            <th scope="col" class="col-actions"><span class="visually-hidden">작업</span></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <th:block th:each="member : ${members}">
+                            <tr class="admin-table__row" data-admin-item-row>
+                                <td class="admin-table__id"
+                                    th:text="${'user' + #numbers.formatInteger(member.id, 3)}">user001</td>
+                                <td class="admin-table__name" th:text="${member.name}">이름</td>
+                                <td class="admin-table__nick" th:text="${member.nickname}">닉네임</td>
+                                <td class="admin-table__email" th:text="${member.email}">email</td>
+                                <td th:text="${member.createdAt != null ? #temporals.format(member.createdAt, 'yyyy-MM-dd') : '—'}">—</td>
+                                <td>
+                                    <span th:if="${member.state == '활동'}" class="admin-badge admin-badge--active">활성</span>
+                                    <span th:if="${member.state == '휴먼'}" class="admin-badge admin-badge--dormant">휴면</span>
+                                    <span th:if="${member.state == '정지'}" class="admin-badge admin-badge--suspended">정지</span>
+                                    <span th:if="${member.state != '활동' and member.state != '휴먼' and member.state != '정지'}"
+                                          class="admin-badge"
+                                          th:text="${member.state}">—</span>
+                                </td>
+                                <td class="col-actions">
+                                    <div class="admin-table__actions">
+                                        <button type="button"
+                                                class="admin-icon-btn"
+                                                title="회원 편집"
+                                                data-admin-member-edit
+                                                th:attr="data-member-id=${member.id},
+                                                         data-member-code=${'user' + #numbers.formatInteger(member.id, 3)},
+                                                         data-member-name=${member.name},
+                                                         data-member-nickname=${member.nickname},
+                                                         data-member-email=${member.email},
+                                                         data-member-joined=${member.createdAt != null ? #temporals.format(member.createdAt, 'yyyy-MM-dd') : '—'},
+                                                         data-member-state=${member.state},
+                                                         data-keyword=${keyword}">
+                                            <svg viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M8 2L10 4L4 10H2V8L8 2Z" stroke="currentColor" stroke-linejoin="round"/></svg>
+                                        </button>
+                                        <button type="button"
+                                                class="admin-icon-btn admin-icon-btn--danger"
+                                                title="회원 삭제"
+                                                data-admin-delete-toggle
+                                                aria-expanded="false">
+                                            <svg viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M2 3H10M4 3V2H8V3M5 5V9M7 5V9M3 3L3.5 10H8.5L9 3" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="admin-delete-row" aria-hidden="true">
+                                <td colspan="7">
+                                    <div class="admin-delete-panel">
+                                        <p class="admin-delete-panel__message">
+                                            <svg viewBox="0 0 13 13" fill="none" aria-hidden="true">
+                                                <circle cx="6.5" cy="6.5" r="5.5" stroke="currentColor"/>
+                                                <path d="M6.5 4V7M6.5 9H6.51" stroke="currentColor" stroke-linecap="round"/>
+                                            </svg>
+                                            <span>
+                                                <strong th:text="${member.name}">이름</strong>
+                                                회원을 정말 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.
+                                            </span>
+                                        </p>
+                                        <div class="admin-delete-panel__actions">
+                                            <button type="button"
+                                                    class="admin-btn admin-btn--ghost"
+                                                    data-admin-delete-cancel>취소</button>
+                                            <form th:action="@{/admin/members/{id}/delete(id=${member.id})}"
+                                                  method="post">
+                                                <input type="hidden"
+                                                       th:name="${_csrf.parameterName}"
+                                                       th:value="${_csrf.token}">
+                                                <input type="hidden" name="keyword" th:value="${keyword}">
+                                                <input type="hidden" name="page" th:value="${pageResult.page}">
+                                                <button type="submit" class="admin-btn admin-btn--danger">
+                                                    <svg viewBox="0 0 11 11" fill="none" aria-hidden="true"><path d="M2 3H9M4 3V2H7V3M5 5V8M6 5V8M3 3L3.5 9H7.5L8 3" stroke="currentColor" stroke-linecap="round"/></svg>
+                                                    삭제 확인
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </th:block>
+                        </tbody>
+                    </table>
+                </div>
+                <div th:replace="~{fragments/pagination :: admin-members(${pageResult}, ${keyword})}"></div>
+            </th:block>
+        </main>
+    </div>
+
+    <div id="admin-member-dialog-backdrop" class="admin-dialog-backdrop" hidden></div>
+    <dialog id="admin-member-dialog" class="admin-dialog" aria-labelledby="admin-member-dialog-title">
+        <div class="admin-dialog__inner">
+            <header class="admin-dialog__head">
+                <h2 id="admin-member-dialog-title" class="admin-dialog__title">회원 정보 편집</h2>
+                <button type="button" class="admin-dialog__close" data-admin-member-close aria-label="닫기">×</button>
+            </header>
+            <form id="admin-member-form" method="post" th:action="@{/admin/members/0/update-status}">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                <input type="hidden" name="state" id="admin-member-state" value="활동">
+                <input type="hidden" name="keyword" id="admin-member-keyword" value="">
+                <input type="hidden" name="page" id="admin-member-page" th:value="${pageResult != null ? pageResult.page : 1}">
+
+                <div class="admin-dialog__field">
+                    <span class="admin-dialog__label">MEMBER ID</span>
+                    <p class="admin-dialog__value admin-dialog__value--readonly" id="admin-member-code">user001</p>
+                </div>
+                <div class="admin-dialog__field">
+                    <span class="admin-dialog__label">이름</span>
+                    <p class="admin-dialog__value admin-dialog__value--readonly" id="admin-member-name">—</p>
+                </div>
+                <div class="admin-dialog__field">
+                    <span class="admin-dialog__label">닉네임</span>
+                    <p class="admin-dialog__value admin-dialog__value--readonly" id="admin-member-nickname">—</p>
+                </div>
+                <div class="admin-dialog__field">
+                    <span class="admin-dialog__label">이메일</span>
+                    <p class="admin-dialog__value admin-dialog__value--readonly" id="admin-member-email">—</p>
+                </div>
+                <div class="admin-dialog__field">
+                    <span class="admin-dialog__label">가입일</span>
+                    <p class="admin-dialog__value admin-dialog__value--readonly" id="admin-member-joined">—</p>
+                </div>
+                <div class="admin-dialog__field">
+                    <span class="admin-dialog__label">상태</span>
+                    <div class="admin-dialog__states" role="group" aria-label="회원 상태">
+                        <button type="button"
+                                class="admin-dialog__state"
+                                data-admin-member-state
+                                data-state-value="활동"
+                                aria-pressed="false">활성</button>
+                        <button type="button"
+                                class="admin-dialog__state"
+                                data-admin-member-state
+                                data-state-value="휴먼"
+                                aria-pressed="false">휴면</button>
+                        <button type="button"
+                                class="admin-dialog__state"
+                                data-admin-member-state
+                                data-state-value="정지"
+                                aria-pressed="false">정지</button>
+                    </div>
+                </div>
+                <div class="admin-dialog__actions">
+                    <button type="button" class="admin-btn admin-btn--ghost" data-admin-member-close>취소</button>
+                    <button type="submit" class="admin-btn admin-btn--primary">저장</button>
+                </div>
+            </form>
+        </div>
+    </dialog>
+</div>
+
+<th:block layout:fragment="extra-scripts">
+    <script th:src="@{/js/admin.js}"></script>
+</th:block>
+</body>
+</html>

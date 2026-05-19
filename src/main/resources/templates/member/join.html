@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}"
+      lang="ko">
+<head>
+    <title>회원가입</title>
+    <th:block layout:fragment="extra-head">
+        <link rel="stylesheet" th:href="@{/css/member-auth.css}">
+    </th:block>
+</head>
+<body>
+<div layout:fragment="content">
+    <section class="auth auth--join" aria-labelledby="auth-join-title">
+        <header class="auth__head">
+            <h1 id="auth-join-title" class="auth__title">REGISTER</h1>
+            <p class="auth__subtitle">Digital Editorial Reading Log System</p>
+        </header>
+
+        <form class="auth__form auth__form--join"
+              th:action="@{/member/join}"
+              method="post"
+              data-auth-join
+              th:attr="data-email-verified=${emailCheck == 'available'} ? 'true' : 'false'"
+              novalidate>
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <input type="hidden"
+                   name="birth"
+                   data-birth-hidden
+                   th:value="${joinForm != null && joinForm.birth != null ? joinForm.birth : ''}">
+
+            <div class="auth__field auth__field--email-check">
+                <label class="visually-hidden" for="join-email">이메일</label>
+                <input id="join-email"
+                       class="auth__input"
+                       type="email"
+                       name="email"
+                       autocomplete="email"
+                       placeholder="EMAIL ADDRESS"
+                       th:value="${joinForm != null && joinForm.email != null ? joinForm.email : emailCheckValue}"
+                       required>
+                <div class="auth__email-actions">
+                    <span class="auth__icon" aria-hidden="true">
+                        <svg viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="1" y="3" width="13" height="9" rx="1" stroke="currentColor" stroke-width="1.1"/>
+                            <path d="M1 4.5L7.5 9L14 4.5" stroke="currentColor" stroke-width="1.1"/>
+                        </svg>
+                    </span>
+                    <button type="submit"
+                            class="auth__btn-check"
+                            th:classappend="${emailCheck == 'available'} ? 'is-available' : (${emailCheck == 'duplicate'} ? 'is-duplicate' : '')"
+                            formnovalidate
+                            formmethod="post"
+                            th:formaction="@{/member/check-email}">중복 확인</button>
+                </div>
+                <p class="auth__field-hint auth__field-hint--success"
+                   th:if="${emailCheck == 'available'}"
+                   role="status">사용 가능한 이메일입니다.</p>
+                <p class="auth__field-hint auth__field-hint--error"
+                   th:if="${emailCheck == 'duplicate'}"
+                   role="alert">이미 사용 중인 이메일입니다.</p>
+                <p class="auth__field-hint auth__field-hint--error"
+                   th:if="${emailCheck == 'invalid'}"
+                   role="alert">이메일을 입력한 뒤 중복 확인을 해 주세요.</p>
+            </div>
+
+            <div class="auth__field">
+                <label class="visually-hidden" for="join-name">실명</label>
+                <input id="join-name"
+                       class="auth__input"
+                       type="text"
+                       name="name"
+                       autocomplete="name"
+                       placeholder="REAL NAME"
+                       th:value="${joinForm != null ? joinForm.name : ''}"
+                       required>
+                <span class="auth__icon" aria-hidden="true">
+                    <svg viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="7.5" cy="5" r="2.5" stroke="currentColor" stroke-width="1.1"/>
+                        <path d="M3 13C3 10.5 5 9 7.5 9C10 9 12 10.5 12 13" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+                    </svg>
+                </span>
+            </div>
+
+            <div class="auth__field" th:classappend="${nicknameDuplicate} ? 'is-invalid' : ''">
+                <label class="visually-hidden" for="join-nickname">닉네임</label>
+                <input id="join-nickname"
+                       class="auth__input"
+                       type="text"
+                       name="nickname"
+                       autocomplete="nickname"
+                       placeholder="NICKNAME"
+                       th:value="${joinForm != null ? joinForm.nickname : ''}"
+                       required>
+                <span class="auth__icon" aria-hidden="true">
+                    <svg viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M3 5H12M7.5 3V7" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+                        <circle cx="7.5" cy="9.5" r="3" stroke="currentColor" stroke-width="1.1"/>
+                    </svg>
+                </span>
+                <p class="auth__field-hint auth__field-hint--error"
+                   th:if="${nicknameDuplicate}"
+                   role="alert">이미 사용 중인 닉네임입니다.</p>
+            </div>
+
+            <div class="auth__field">
+                <label class="visually-hidden" for="join-birth">생년월일</label>
+                <input id="join-birth"
+                       class="auth__input auth__input--birth"
+                       type="text"
+                       inputmode="numeric"
+                       data-birth-input
+                       placeholder="BIRTHDATE (EX. 19970701)"
+                       maxlength="8"
+                       th:value="${joinForm != null && joinForm.birth != null ? #temporals.format(joinForm.birth, 'yyyyMMdd') : ''}"
+                       required>
+                <span class="auth__icon" aria-hidden="true">
+                    <svg viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="2" y="3" width="11" height="10" rx="1" stroke="currentColor" stroke-width="1.1"/>
+                        <path d="M2 6H13M5 1.5V4M10 1.5V4" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+                    </svg>
+                </span>
+            </div>
+
+            <div class="auth__field">
+                <label class="visually-hidden" for="join-password">비밀번호</label>
+                <input id="join-password" class="auth__input" type="password" name="password" autocomplete="new-password" placeholder="PASSWORD" required>
+                <span class="auth__icon" aria-hidden="true">
+                    <svg viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="3" y="7" width="9" height="6" rx="1" stroke="currentColor" stroke-width="1.1"/>
+                        <path d="M5 7V5.5C5 3.57 6.57 2 8.5 2C10.43 2 12 3.57 12 5.5V7" stroke="currentColor" stroke-width="1.1"/>
+                    </svg>
+                </span>
+            </div>
+
+            <div class="auth__field">
+                <label class="visually-hidden" for="join-password-confirm">비밀번호 확인</label>
+                <input id="join-password-confirm" class="auth__input" type="password" name="passwordConfirm" autocomplete="new-password" placeholder="CONFIRM PASSWORD" required>
+                <span class="auth__icon" aria-hidden="true">
+                    <svg viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M3 7.5L6 10.5L12 4.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </span>
+            </div>
+
+            <button type="submit" class="auth__submit">
+                CREATE ACCOUNT
+                <span class="auth__submit-icon" aria-hidden="true">
+                    <svg viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M1 7H12M12 7L8 3M12 7L8 11" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </span>
+            </button>
+        </form>
+
+        <p class="auth__footer">
+            계정이 있으신가요?
+            <a class="auth__link" th:href="@{/member/login}">로그인하기</a>
+        </p>
+    </section>
+</div>
+<th:block layout:fragment="extra-scripts">
+    <script th:src="@{/js/member-auth.js}"></script>
+</th:block>
+</body>
+</html>

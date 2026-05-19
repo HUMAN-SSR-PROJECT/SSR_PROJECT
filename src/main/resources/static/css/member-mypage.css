@@ -1,0 +1,356 @@
+/* 마이페이지 — Figma 1:6087 / 1:6183 */
+
+.mypage {
+    background: var(--surface-warm);
+}
+
+.mypage__hero {
+    background: var(--surface);
+    border-bottom: 1px solid var(--line);
+}
+
+.mypage__hero-inner {
+    max-width: min(1020px, 100%);
+    margin: 0 auto;
+    padding: 56px 40px 48px;
+}
+
+.mypage__eyebrow {
+    margin: 0 0 16px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.3em;
+    color: var(--muted-light);
+}
+
+.mypage__title {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-size: clamp(30px, 4vw, 36px);
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+}
+
+.mypage__body {
+    max-width: min(1020px, 100%);
+    margin: 0 auto;
+    padding: 40px 40px 80px;
+}
+
+.mypage__card {
+    background: var(--surface);
+    border-top: 2px solid var(--ink);
+    padding: 38px 40px;
+}
+
+.mypage__card--profile {
+    margin-bottom: 0;
+}
+
+.mypage__card--info {
+    border-top-width: 2px;
+}
+
+.mypage__profile-row {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    flex-wrap: wrap;
+}
+
+/* Avatar */
+.mypage__avatar {
+    position: relative;
+    flex-shrink: 0;
+    width: 88px;
+    height: 88px;
+    border-radius: 50%;
+    background: var(--ink);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.mypage__avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.mypage__avatar-initial {
+    font-size: 33px;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1;
+    user-select: none;
+}
+
+.mypage__avatar--editable {
+    cursor: pointer;
+}
+
+.mypage__avatar-overlay {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: var(--ink);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+}
+
+.mypage__avatar--editable:hover .mypage__avatar-overlay,
+.mypage__avatar--editable:focus-within .mypage__avatar-overlay {
+    opacity: 1;
+}
+
+.mypage__avatar--editable:focus-within {
+    outline: 2px solid var(--ink);
+    outline-offset: 3px;
+}
+
+/* Nickname */
+.mypage__nickname-block {
+    flex: 1;
+    min-width: 160px;
+}
+
+.mypage__field-label {
+    margin: 0 0 6px;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    color: var(--muted-light);
+}
+
+.mypage__nickname {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-size: 26px;
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+}
+
+.mypage__nickname-edit {
+    flex: 1;
+    min-width: 200px;
+}
+
+.mypage__nickname-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.mypage__input--nickname {
+    flex: 1;
+    min-width: 180px;
+    max-width: 480px;
+    font-family: var(--font-serif);
+    font-size: 20px;
+    font-weight: 900;
+}
+
+/* Buttons */
+.mypage__btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    height: 36px;
+    padding: 0 16px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    border: 1px solid transparent;
+    cursor: pointer;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.mypage__btn--outline {
+    margin-left: auto;
+    border-color: #d4cfc8;
+    color: var(--ink-soft);
+    background: transparent;
+}
+
+.mypage__btn--outline:hover {
+    border-color: var(--ink);
+    color: var(--ink);
+}
+
+.mypage__btn--save {
+    background: var(--ink);
+    color: #fff;
+    border-color: var(--ink);
+}
+
+.mypage__btn--save:hover {
+    background: #333;
+}
+
+.mypage__btn--cancel {
+    border-color: #d4cfc8;
+    color: var(--muted);
+    background: var(--surface);
+}
+
+.mypage__btn--cancel:hover {
+    border-color: var(--ink);
+    color: var(--ink);
+}
+
+.mypage__btn--withdraw {
+    border-color: var(--line);
+    color: var(--muted-light);
+    background: transparent;
+    letter-spacing: 0.12em;
+}
+
+.mypage__btn--withdraw:hover {
+    border-color: var(--muted);
+    color: var(--muted);
+}
+
+/* Info rows */
+.mypage__info-row {
+    display: grid;
+    grid-template-columns: 108px 1fr;
+    align-items: center;
+    gap: 24px;
+    min-height: 70px;
+    padding: 4px 0;
+}
+
+.mypage__info-row--edit {
+    align-items: flex-start;
+    padding: 20px 0;
+}
+
+.mypage__info-label {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: var(--ink);
+}
+
+.mypage__info-value {
+    font-size: 14px;
+    color: var(--ink-soft);
+    line-height: 1.6;
+    word-break: break-word;
+}
+
+.mypage__info-value--muted {
+    color: var(--muted-light);
+}
+
+.mypage__divider {
+    height: 1px;
+    background: var(--line);
+}
+
+.mypage__info-field {
+    width: 100%;
+}
+
+.mypage__input,
+.mypage__textarea {
+    width: 100%;
+    border: 1px solid var(--line);
+    background: var(--surface-warm);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-size: 13px;
+    line-height: 1.6;
+    padding: 9px 12px;
+}
+
+.mypage__input:focus,
+.mypage__textarea:focus {
+    outline: none;
+    border-color: var(--ink);
+    background: var(--surface);
+}
+
+.mypage__input--readonly {
+    background: var(--line-soft);
+    color: var(--muted-light);
+    cursor: not-allowed;
+}
+
+.mypage__textarea {
+    min-height: 60px;
+    resize: vertical;
+}
+
+.mypage__textarea::placeholder,
+.mypage__input::placeholder {
+    color: rgba(17, 17, 17, 0.45);
+}
+
+.mypage__hint {
+    margin: 5px 0 0;
+    font-size: 10px;
+    color: var(--muted-light);
+    letter-spacing: 0.04em;
+}
+
+.mypage__withdraw-wrap {
+    display: flex;
+    justify-content: center;
+    margin-top: 40px;
+}
+
+.mypage__edit-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+@media (max-width: 720px) {
+    .mypage__hero-inner,
+    .mypage__body {
+        padding-left: 24px;
+        padding-right: 24px;
+    }
+
+    .mypage__card {
+        padding: 28px 24px;
+    }
+
+    .mypage__btn--outline {
+        margin-left: 0;
+        width: 100%;
+    }
+
+    .mypage__info-row,
+    .mypage__info-row--edit {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+
+    .mypage__nickname-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .mypage__input--nickname {
+        max-width: none;
+    }
+}

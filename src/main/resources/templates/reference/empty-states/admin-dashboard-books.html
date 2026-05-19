@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}"
+      lang="ko">
+<head>
+    <title>REF · Empty — 대시보드 도서</title>
+    <th:block layout:fragment="extra-head">
+        <link rel="stylesheet" th:href="@{/css/admin.css}">
+    </th:block>
+</head>
+<body>
+<div layout:fragment="content" class="ref-empty-preview">
+    <p class="ref-empty-preview__meta">
+        <strong>관리자 대시보드 · 최근 등록 도서</strong><br>
+        Fragment: <code>fragments/empty-state :: admin-dashboard-books</code>
+    </p>
+    <article class="ref-empty-preview__frame admin-panel">
+        <header class="admin-panel__head">
+            <h2 class="admin-panel__title">최근 등록 도서</h2>
+        </header>
+        <div th:replace="~{fragments/empty-state :: admin-dashboard-books}"></div>
+    </article>
+</div>
+</body>
+</html>
