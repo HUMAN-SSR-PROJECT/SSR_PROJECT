@@ -168,7 +168,7 @@
             <div class="book-search__list">
                 <form class="book-search__item book-search__item-form"
                       th:each="book, stat : ${searchResults}"
-                      th:action="@{/book/detail/{id}(id=${book.bookId})}"
+                      th:attr="action=@{/book/detail/{id}(id=${book.bookId})}"
                       method="post">
                     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                     <input type="hidden"

@@ -8,6 +8,7 @@ import com.ssrpro.library.dto.response.PageResult;
 import com.ssrpro.library.service.BookService;
 import com.ssrpro.library.support.RegionCatalog;
 import lombok.RequiredArgsConstructor;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -39,7 +40,11 @@ public class BookController {
     public String executeSearch(
             @ModelAttribute("searchReq") BookSearchReq req,
             @RequestParam(defaultValue = "1") int page,
+            HttpServletRequest request,
             Model model) {
+        // 비로그인 검색 결과 POST 폼(CSRF) 렌더 전에 세션 확보 — 응답 커밋 후 세션 생성 방지
+        request.getSession(true);
+
         if (req.getCity() <= 0) {
             req.setCity(11);
         }
